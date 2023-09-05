@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <Platforms>AnyCPU</Platforms>
+    <FileVersion>0.1.0</FileVersion>
+    <Version>$(FileVersion)</Version>
+    <AssemblyVersion>$(FileVersion)</AssemblyVersion>
+    <Authors>newbie45-yet</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.5" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CQHttp\CQHttp.csproj" />
+  </ItemGroup>
+</Project>

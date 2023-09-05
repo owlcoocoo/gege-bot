@@ -1,0 +1,33 @@
+{
+	"Bot": {
+		// 正向 WebSocket 地址
+		"WSAddress": "ws://127.0.0.1:8888",
+		// 管理员QQ
+		"ManagerQQ" : 123456,
+		// 是否发送错误消息
+		"IsSendErrorMessage": true,
+		// 超时撤回错误消息，0不撤回，单位秒
+		"DeleteErrorMessageTimeout": 15
+	},
+	"Pixiv": {
+		// 代理地址
+		"Proxy": "http://127.0.0.1:1082",
+		// 图片的反向代理地址，不填则会使用 proxy 下载图片
+		// 如 https://i.pixiv.re 
+		"PximgReverseProxy": "",
+		// pixiv账号的cookie，如不填入，搜索的结果会有限制
+		"Cookie": "",
+		// 图片下载超时，超时会重试3次，单位秒
+		"Timeout": 30,
+		// 发送的图片数量
+		"MaxImages": 6,
+		// 图片质量 0-100，如大于等于 100 则发送原图
+		"ImageQuality": 80
+	},
+	"Approve": {
+		// 自动同意好友请求
+		"AutoApproveFriendAdd": true,
+		// 自动同意群邀请请求
+		"AutoApproveGroupInvite": true,
+	},
+}
