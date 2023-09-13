@@ -5,5 +5,6 @@
         public string Alt { get; set; } = "";
         public List<string> Images { get; set; } = new();
         public string Message { get; set; }
+        public string ImageMessage { get; set; }
     }
 }

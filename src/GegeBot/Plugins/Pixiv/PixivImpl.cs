@@ -58,20 +58,29 @@ namespace GegeBot.Plugins.Pixiv
                     foreach (var item in rankDict) rank += item.Key + "|";
                     rank = rank.TrimEnd('|');
                     dto.Message = "pixiv 搜图帮助\r\n\r\n"
-                                  + "搜xxx —— 取关键字xxx的随机一个作品\r\n\r\n"
-                                  + "搜画师aaa  —— 取画师aaa的随机一个作品\r\n"
-                                  + "搜画师aaa#bbb  —— 取画师aaa的标签关键字bbb的随机一个作品\r\n\r\n"
-                                  + $"搜排行榜xxx  —— 取排行榜前十的作品，xxx关键字如下：{rank}\r\n\r\n"
-                                  + $"搜预览xxx  —— 取关键字xxx作品列表的预览图\r\n"
-                                  + $"搜预览画师aaa  —— 取画师aaa的作品列表的预览图\r\n"
-                                  + $"搜预览画师aaa#bbb  —— 取画师aaa的标签关键字bbb的作品列表的预览图";
+                                  + "id 格式：id + 作品或画师的一窜数字，如 id123456789\r\n\r\n"
+                                  + "搜[关键字|id] —— 取 关键字 或 id 的随机一个作品\r\n\r\n"
+                                  + "搜画师[name|id]  —— 取 画师名 或 画师id 的随机一个作品\r\n"
+                                  + "搜画师[name|id]#tag  —— 取 画师名 或 画师id 的 标签关键字tag 的随机一个作品\r\n\r\n"
+                                  + $"搜排行榜[mode]  —— 取排行榜前十的作品，mode 关键字如下：{rank}\r\n\r\n"
+                                  + $"搜预览[关键字]  —— 取 关键字 作品列表的预览图\r\n"
+                                  + $"搜预览画师[name|id]  —— 取 画师名 或 画师id 的作品列表的预览图\r\n"
+                                  + $"搜预览画师[name|id]#tag  —— 取 画师名 或 画师id 的 标签关键字tag 的作品列表的预览图";
                 }
                 else if (keyword.StartsWith("画师"))
                 {
                     keyword = keyword[2..];
 
                     GetUserNameAndTag(keyword, out string user, out string tag);
-                    dto = pixivAPI.Touch_SearchUserIllusts(user, tag);
+                    if (keyword.StartsWith("id", true, null))
+                    {
+                        string id = keyword[2..].Trim();
+                        dto = pixivAPI.Touch_SearchUserIllusts(null, id, tag);
+                    }
+                    else
+                    {
+                        dto = pixivAPI.Touch_SearchUserIllusts(user, tag);
+                    }
                 }
                 else if (keyword.StartsWith("排行榜"))
                 {
@@ -91,9 +100,16 @@ namespace GegeBot.Plugins.Pixiv
                     if (keyword.StartsWith("画师"))
                     {
                         keyword = keyword[2..];
-
                         GetUserNameAndTag(keyword, out string user, out string tag);
-                        dto = pixivAPI.Touch_GetUserIllustsPreview(user, tag);
+                        if (keyword.StartsWith("id", true, null))
+                        {
+                            string id = keyword[2..].Trim();
+                            dto = pixivAPI.Touch_GetUserIllustsPreview(null, id, tag);
+                        }
+                        else
+                        {
+                            dto = pixivAPI.Touch_GetUserIllustsPreview(user, tag);
+                        }
                     }
                     else
                     {
@@ -102,7 +118,15 @@ namespace GegeBot.Plugins.Pixiv
                 }
                 else
                 {
-                    dto = pixivAPI.Touch_SearchIllusts(keyword);
+                    if (keyword.StartsWith("id", true, null))
+                    {
+                        string id = keyword[2..].Trim();
+                        dto = pixivAPI.Touch_SearchIllusts(null, id);
+                    }
+                    else
+                    {
+                        dto = pixivAPI.Touch_SearchIllusts(keyword);
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(dto.Message))
@@ -123,6 +147,8 @@ namespace GegeBot.Plugins.Pixiv
                 }
 
                 cqCode.SetReply(obj.message_id);
+                if (!string.IsNullOrEmpty(dto.ImageMessage))
+                    cqCode.SetText(dto.ImageMessage);
                 foreach (var img in dto.Images)
                 {
                     cqCode.SetImage(img);

@@ -1,11 +1,11 @@
 ﻿using CQHttp;
+using CQHttp.DTOs;
 using RestSharp;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json.Nodes;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GegeBot.Plugins.Pixiv
 {
@@ -47,14 +47,27 @@ namespace GegeBot.Plugins.Pixiv
             });
         }
 
-        public static byte[] Puzzle(List<byte[]> data, int perWidth, int perHeight, int quality, int maxCols = 3)
+        /// <summary>
+        /// 拼图
+        /// </summary>
+        /// <param name="data">图片数据集</param>
+        /// <param name="text">文本数据集，需要跟data对应</param>
+        /// <param name="perWidth">每张图片宽度</param>
+        /// <param name="perHeight">每张图片高度</param>
+        /// <param name="quality">图片质量</param>
+        /// <param name="maxCols">最大列数</param>
+        /// <param name="textSize">文本大小</param>
+        /// <returns></returns>
+        public static byte[] Puzzle(List<byte[]> data, List<string> text, int perWidth, int perHeight, int quality, int maxCols = 3, int textSize = 32)
         {
             int count = data.Count;
             maxCols = count < maxCols ? count : maxCols;
             int bitmapRows = (int)Math.Ceiling((decimal)count / maxCols);
-            var newBitmap = new SKBitmap(perWidth * maxCols, perHeight * bitmapRows);
+            int textHeightTotal = text != null && text.Count > 0 ? textSize * bitmapRows : 0;
+            var newBitmap = new SKBitmap(perWidth * maxCols, perHeight * bitmapRows + textHeightTotal);
             SKCanvas canvas = new SKCanvas(newBitmap);
             canvas.DrawColor(new SKColor(255, 255, 255));
+
             for (int i = 0, row = 0, col = 0; i < count; i++)
             {
                 if (i != 0 && i % maxCols == 0)
@@ -65,7 +78,18 @@ namespace GegeBot.Plugins.Pixiv
 
                 var bitmap = SKBitmap.Decode(data[i]);
                 bitmap = bitmap.Resize(new SKImageInfo(perHeight, perHeight), SKFilterQuality.High);
-                canvas.DrawBitmap(bitmap, col * perWidth, row * perHeight);
+
+                int textHeight = 0;
+                if (textHeightTotal > 0)
+                {
+                    SKPaint paint = new SKPaint();
+                    paint.TextSize = textSize;
+                    paint.TextAlign = SKTextAlign.Center;
+                    canvas.DrawText(text[i], col * perWidth + perWidth / 2, row * (perHeight + textSize) + (float)(textSize * 0.8), paint);
+                    textHeight = (row + 1) * textSize;
+                }
+                
+                canvas.DrawBitmap(bitmap, col * perWidth, textHeight + row * perHeight);
 
                 col++;
             }
@@ -178,7 +202,7 @@ namespace GegeBot.Plugins.Pixiv
                     urls.Add(item["url_big"].GetValue<string>());
             }
 
-            dto.Alt = illust_details["alt"].GetValue<string>();
+            dto.Alt += $"{illust_details["alt"]}\r\n作品id{illust_details["id"]}  画师id{illust_details["user_id"]}";
 
             urls = urls.Take(PixivConfig.MaxImages).ToList();
 
@@ -197,9 +221,20 @@ namespace GegeBot.Plugins.Pixiv
             return dto;
         }
 
-        public PixivDto Touch_SearchIllusts(string word)
+        /// <summary>
+        /// 查找作品
+        /// </summary>
+        /// <param name="word">关键字</param>
+        /// <param name="id">作品id，如传入则无视word字段</param>
+        /// <returns></returns>
+        public PixivDto Touch_SearchIllusts(string word, string id = "")
         {
             PixivDto dto = new PixivDto();
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                return Touch_GetIllusts(dto, id);
+            }
 
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/search/illusts?include_meta=1&s_mode=s_tag&type=all&word={word}", Method.Get);
             RestResponse response = ExecuteAndRetry(request);
@@ -216,7 +251,26 @@ namespace GegeBot.Plugins.Pixiv
             return Touch_GetIllusts(dto, illust["id"].GetValue<string>());
         }
 
-        private JsonArray Touch_GetUserIllusts(string nick, string tag, out string error)
+
+        private JsonArray Touch_GetUserIllusts(string user_id, string tag, out string error)
+        {
+            error = "";
+
+            string param_tag = string.IsNullOrEmpty(tag) ? "" : $"&tag={tag}";
+            var request = new RestRequest($"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}{param_tag}", Method.Get);
+            var response = ExecuteAndRetry(request);
+            var json_result = Json.ToJsonNode(response.Content);
+            var illusts = json_result["body"]["illusts"].AsArray();
+            if (json_result["error"].GetValue<bool>() || illusts.Count < 1)
+            {
+                error = "没有搜到相关的画师作品";
+                return null;
+            }
+
+            return illusts;
+        }
+
+        private JsonArray Touch_SearchUserIllusts(string nick, string tag, out string error)
         {
             error = "";
 
@@ -232,29 +286,28 @@ namespace GegeBot.Plugins.Pixiv
 
             var user = users[0];
 
-            string param_tag = string.IsNullOrEmpty(tag) ? "" : $"&tag={tag}";
-            request = new RestRequest($"https://www.pixiv.net/touch/ajax/user/illusts?id={user["user_id"]}{param_tag}", Method.Get);
-            response = ExecuteAndRetry(request);
-            json_result = Json.ToJsonNode(response.Content);
-            var illusts = json_result["body"]["illusts"].AsArray();
-            if (json_result["error"].GetValue<bool>() || illusts.Count < 1)
-            {
-                error = "没有搜到相关的画师作品";
-                return null;
-            }
+            var illusts = Touch_GetUserIllusts(user["user_id"].ToString(), tag, out error);
 
             return illusts;
         }
 
-
-        public PixivDto Touch_SearchUserIllusts(string nick, string tag = "")
+        /// <summary>
+        /// 查找用户作品
+        /// </summary>
+        /// <param name="nick">用户名</param>
+        /// <param name="user_id">用户id，如传入则无视nick字段</param>
+        /// <param name="tag">作品标签</param>
+        /// <returns></returns>
+        public PixivDto Touch_SearchUserIllusts(string nick, string user_id = "", string tag = "")
         {
             PixivDto dto = new PixivDto();
 
-            var illusts = Touch_GetUserIllusts(nick, tag, out string errror);
+            var illusts = string.IsNullOrEmpty(user_id)
+                ? Touch_SearchUserIllusts(nick, tag, out string error)
+                : Touch_GetUserIllusts(user_id, tag, out error);
             if (illusts ==  null)
             {
-                dto.Message = errror;
+                dto.Message = error;
                 return dto;
             }
 
@@ -263,6 +316,11 @@ namespace GegeBot.Plugins.Pixiv
             return Touch_GetIllusts(dto, illust["id"].GetValue<string>());
         }
 
+        /// <summary>
+        /// 获取排行版作品
+        /// </summary>
+        /// <param name="mode">daily|weekly|monthly|rookie|original|daily_ai|male|female</param>
+        /// <returns></returns>
         public PixivDto Touch_GetRankIllusts(string mode)
         {
             PixivDto dto = new PixivDto();
@@ -295,13 +353,14 @@ namespace GegeBot.Plugins.Pixiv
             }
 
             List<string> urls = new();
-
+            List<string> ids = new();
             for (int i = 0; i < 10; i++)
             {
                 var item = illusts[i];
                 dto.Alt += $"{i + 1} {item["alt"]}\r\n";
                 url = item["url_sm"].GetValue<string>();
                 urls.Add(url);
+                ids.Add($"id{item["id"]}");
             }
 
             var images = DownloadImages(urls);
@@ -312,12 +371,17 @@ namespace GegeBot.Plugins.Pixiv
                 dataList.Add(image.Value);
             }
 
-            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, 360, 360, 90, 5));
+            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, 360, 360, 90, 5));
             dto.Images.Add(result);
 
             return dto;
         }
 
+        /// <summary>
+        /// 获取关键字作品的预览图
+        /// </summary>
+        /// <param name="word">关键字</param>
+        /// <returns></returns>
         public PixivDto Touch_GetIllustsPreview(string word)
         {
             PixivDto dto = new PixivDto();
@@ -333,12 +397,14 @@ namespace GegeBot.Plugins.Pixiv
             }
 
             List<string> urls = new();
+            List<string> ids = new();
             for (int i = 0; i < illusts.Count; i++)
             {
                 var item = illusts[i];
                 //dto.Alt += $"{i + 1} {item["alt"]}\r\n";
                 string url = item["url_sm"].GetValue<string>();
                 urls.Add(url);
+                ids.Add($"id{item["id"]}");
             }
 
             var images = DownloadImages(urls);
@@ -348,30 +414,41 @@ namespace GegeBot.Plugins.Pixiv
             {
                 dataList.Add(image.Value);
             }
-            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, 360, 360, 90, 6));
+            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, 360, 360, 90, 6));
             dto.Images.Add(result);
 
             return dto;
         }
 
-        public PixivDto Touch_GetUserIllustsPreview(string nick, string tag = "")
+        /// <summary>
+        /// 获取用户作品的预览图
+        /// </summary>
+        /// <param name="nick">用户名</param>
+        /// <param name="user_id">用户id，如传入则无视nick字段</param>
+        /// <param name="tag">作品标签</param>
+        /// <returns></returns>
+        public PixivDto Touch_GetUserIllustsPreview(string nick, string user_id = "", string tag = "")
         {
             PixivDto dto = new PixivDto();
 
-            var illusts = Touch_GetUserIllusts(nick, tag, out string errror);
+            var illusts = string.IsNullOrEmpty(user_id)
+                ? Touch_SearchUserIllusts(nick, tag, out string error)
+                : Touch_GetUserIllusts(user_id, tag, out error);
             if (illusts == null)
             {
-                dto.Message = errror;
+                dto.Message = error;
                 return dto;
             }
 
             List<string> urls = new();
+            List<string> ids = new();
             for (int i = 0; i < illusts.Count; i++)
             {
                 var item = illusts[i];
                 //dto.Alt += $"{i + 1} {item["alt"]}\r\n";
                 string url = item["url_sm"].GetValue<string>();
                 urls.Add(url);
+                ids.Add($"id{item["id"]}");
             }
 
             var images = DownloadImages(urls);
@@ -381,7 +458,7 @@ namespace GegeBot.Plugins.Pixiv
             {
                 dataList.Add(image.Value);
             }
-            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, 360, 360, 90, 6));
+            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, 360, 360, 90, 6));
             dto.Images.Add(result);
 
             return dto;
