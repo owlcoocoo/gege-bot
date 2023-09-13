@@ -6,7 +6,7 @@
 		<Version>0.1.0</Version>
 		<FileVersion>$(Version)</FileVersion>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
-		<Authors>newbie45-yet</Authors>
+		<Authors>owlcoocoo</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>

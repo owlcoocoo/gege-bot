@@ -8,7 +8,7 @@
     <FileVersion>0.1.0</FileVersion>
     <Version>$(FileVersion)</Version>
     <AssemblyVersion>$(FileVersion)</AssemblyVersion>
-    <Authors>newbie45-yet</Authors>
+    <Authors>owlcoocoo</Authors>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="RestSharp" Version="110.2.0" />
