@@ -176,9 +176,16 @@ namespace GegeBot.Plugins.Pixiv
             return imageDict.OrderBy(a => a.Key).ToArray();
         }
 
+        private bool IsError(JsonNode node)
+        {
+            if (node["error"].GetValue<bool>()) return true;
+
+            return false;
+        }
+
         private bool IsExist(JsonNode node, string body_array_key)
         {
-            if (node["error"].GetValue<bool>()) return false;
+            if (IsError(node)) return false;
 
             var illusts = node["body"][body_array_key].AsArray();
             if (!illusts.Any()) return false;
@@ -193,7 +200,7 @@ namespace GegeBot.Plugins.Pixiv
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/illust/details?illust_id={id}", Method.Get);
             var response = ExecuteAndRetry(request);
             var json_result = Json.ToJsonNode(response.Content);
-            if (!IsExist(json_result, "illust_details"))
+            if (IsError(json_result))
             {
                 dto.Message = "没有搜到相关的作品";
                 return dto;
@@ -402,7 +409,6 @@ namespace GegeBot.Plugins.Pixiv
             }
 
             var illusts = json_result["body"]["illusts"].AsArray();
-
             return HandleImages(dto, illusts, illusts.Count, false, 360, 360, 90, 6);
         }
 
