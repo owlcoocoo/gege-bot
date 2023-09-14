@@ -148,6 +148,7 @@ namespace GegeBot.Plugins.Pixiv
             {
                 return await Compress(response.RawBytes, PixivConfig.ImageQuality);
             }
+            Console.WriteLine($"[pixiv]下载失败 {url}");
             return null;
         }
 
@@ -166,10 +167,6 @@ namespace GegeBot.Plugins.Pixiv
                     {
                         imageDict.TryAdd((int)i, result);
                     }
-                    else
-                    {
-                        Console.WriteLine($"[pixiv]下载失败 {url}");
-                    }
                 }), i);
                 tasks.Add(task);
                 task.Start();
@@ -179,6 +176,16 @@ namespace GegeBot.Plugins.Pixiv
             return imageDict.OrderBy(a => a.Key).ToArray();
         }
 
+        private bool IsExist(JsonNode node, string body_array_key)
+        {
+            if (node["error"].GetValue<bool>()) return false;
+
+            var illusts = node["body"][body_array_key].AsArray();
+            if (!illusts.Any()) return false;
+
+            return true;
+        }
+
         private PixivDto Touch_GetIllusts(PixivDto dto, string id)
         {
             List<string> urls = new List<string>();
@@ -186,7 +193,7 @@ namespace GegeBot.Plugins.Pixiv
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/illust/details?illust_id={id}", Method.Get);
             var response = ExecuteAndRetry(request);
             var json_result = Json.ToJsonNode(response.Content);
-            if (json_result["error"].GetValue<bool>())
+            if (!IsExist(json_result, "illust_details"))
             {
                 dto.Message = "没有搜到相关的作品";
                 return dto;
@@ -202,12 +209,10 @@ namespace GegeBot.Plugins.Pixiv
                     urls.Add(item["url_big"].GetValue<string>());
             }
 
-            dto.Alt += $"{illust_details["alt"]}\r\n作品id{illust_details["id"]}  画师id{illust_details["user_id"]}";
+            dto.Alt += $"{illust_details["alt"]}\r\n作品id{illust_details["id"]}\r\n画师id{illust_details["user_id"]}";
 
             urls = urls.Take(PixivConfig.MaxImages).ToList();
-
             var images = DownloadImages(urls);
-
             if (images.Length < 1)
                 dto.Message = "图片下载失败";
             else
@@ -239,13 +244,13 @@ namespace GegeBot.Plugins.Pixiv
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/search/illusts?include_meta=1&s_mode=s_tag&type=all&word={word}", Method.Get);
             RestResponse response = ExecuteAndRetry(request);
             JsonNode json_result = Json.ToJsonNode(response.Content);
-            var illusts = json_result["body"]["illusts"].AsArray();
-            if (json_result["error"].GetValue<bool>() || illusts.Count < 1)
+            if (!IsExist(json_result, "illusts"))
             {
                 dto.Message = "没有搜到相关的作品";
                 return dto;
             }
 
+            var illusts = json_result["body"]["illusts"].AsArray();
             var n = new Random().Next(0, illusts.Count - 1);
             var illust = illusts[n];
             return Touch_GetIllusts(dto, illust["id"].GetValue<string>());
@@ -260,34 +265,29 @@ namespace GegeBot.Plugins.Pixiv
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/user/illusts?id={user_id}{param_tag}", Method.Get);
             var response = ExecuteAndRetry(request);
             var json_result = Json.ToJsonNode(response.Content);
-            var illusts = json_result["body"]["illusts"].AsArray();
-            if (json_result["error"].GetValue<bool>() || illusts.Count < 1)
+            if (!IsExist(json_result, "illusts"))
             {
                 error = "没有搜到相关的画师作品";
                 return null;
             }
-
+            var illusts = json_result["body"]["illusts"].AsArray();
             return illusts;
         }
 
         private JsonArray Touch_SearchUserIllusts(string nick, string tag, out string error)
         {
-            error = "";
-
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/search/users?nick={nick}", Method.Get);
             RestResponse response = ExecuteAndRetry(request);
             JsonNode json_result = Json.ToJsonNode(response.Content);
-            var users = json_result["body"]["users"].AsArray();
-            if (json_result["error"].GetValue<bool>() || users.Count < 1)
+            if (!IsExist(json_result, "users"))
             {
                 error = "没有搜到相关的画师";
                 return null;
             }
 
+            var users = json_result["body"]["users"].AsArray();
             var user = users[0];
-
             var illusts = Touch_GetUserIllusts(user["user_id"].ToString(), tag, out error);
-
             return illusts;
         }
 
@@ -316,6 +316,34 @@ namespace GegeBot.Plugins.Pixiv
             return Touch_GetIllusts(dto, illust["id"].GetValue<string>());
         }
 
+        private PixivDto HandleImages(PixivDto dto, JsonArray illusts, int count, bool needAlt, int perWidth, int perHeight, int quality, int maxCols)
+        {
+            List<string> urls = new();
+            List<string> ids = new();
+            for (int i = 0; i < count; i++)
+            {
+                var item = illusts[i];
+                if (needAlt)
+                    dto.Alt += $"{i + 1} {item["alt"]}\r\n";
+                string url = item["url_sm"].GetValue<string>();
+                urls.Add(url);
+                ids.Add($"id{item["id"]}");
+            }
+
+            var images = DownloadImages(urls);
+
+            List<byte[]> dataList = new List<byte[]>();
+            foreach (var image in images)
+            {
+                dataList.Add(image.Value);
+            }
+
+            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, perWidth, perHeight, quality, maxCols));
+            dto.Images.Add(result);
+
+            return dto;
+        }
+
         /// <summary>
         /// 获取排行版作品
         /// </summary>
@@ -328,13 +356,13 @@ namespace GegeBot.Plugins.Pixiv
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/ranking/illust?mode={mode}&type=all&page=1", Method.Get);
             RestResponse response = ExecuteAndRetry(request);
             JsonNode json_result = Json.ToJsonNode(response.Content);
-            var ranking = json_result["body"]["ranking"].AsArray().Take(10);
-            if (!ranking.Any())
+            if (!IsExist(json_result, "ranking"))
             {
                 dto.Message = "没有相关的作品";
                 return dto;
             }
 
+            var ranking = json_result["body"]["ranking"].AsArray().Take(10);
             string url = "https://www.pixiv.net/touch/ajax/illust/details/many?";
             foreach (var item in ranking)
             {
@@ -352,29 +380,7 @@ namespace GegeBot.Plugins.Pixiv
                 return dto;
             }
 
-            List<string> urls = new();
-            List<string> ids = new();
-            for (int i = 0; i < 10; i++)
-            {
-                var item = illusts[i];
-                dto.Alt += $"{i + 1} {item["alt"]}\r\n";
-                url = item["url_sm"].GetValue<string>();
-                urls.Add(url);
-                ids.Add($"id{item["id"]}");
-            }
-
-            var images = DownloadImages(urls);
-
-            List<byte[]> dataList = new List<byte[]>();
-            foreach (var image in images)
-            {
-                dataList.Add(image.Value);
-            }
-
-            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, 360, 360, 90, 5));
-            dto.Images.Add(result);
-
-            return dto;
+            return HandleImages(dto, illusts, 10, true, 360, 360, 90, 5);
         }
 
         /// <summary>
@@ -389,35 +395,15 @@ namespace GegeBot.Plugins.Pixiv
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/search/illusts?include_meta=1&s_mode=s_tag&type=all&word={word}", Method.Get);
             RestResponse response = ExecuteAndRetry(request);
             JsonNode json_result = Json.ToJsonNode(response.Content);
-            var illusts = json_result["body"]["illusts"].AsArray();
-            if (illusts.Count < 1)
+            if (!IsExist(json_result, "illusts"))
             {
                 dto.Message = "没有搜到相关的作品";
                 return dto;
             }
 
-            List<string> urls = new();
-            List<string> ids = new();
-            for (int i = 0; i < illusts.Count; i++)
-            {
-                var item = illusts[i];
-                //dto.Alt += $"{i + 1} {item["alt"]}\r\n";
-                string url = item["url_sm"].GetValue<string>();
-                urls.Add(url);
-                ids.Add($"id{item["id"]}");
-            }
+            var illusts = json_result["body"]["illusts"].AsArray();
 
-            var images = DownloadImages(urls);
-
-            List<byte[]> dataList = new List<byte[]>();
-            foreach (var image in images)
-            {
-                dataList.Add(image.Value);
-            }
-            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, 360, 360, 90, 6));
-            dto.Images.Add(result);
-
-            return dto;
+            return HandleImages(dto, illusts, illusts.Count, false, 360, 360, 90, 6);
         }
 
         /// <summary>
@@ -440,28 +426,7 @@ namespace GegeBot.Plugins.Pixiv
                 return dto;
             }
 
-            List<string> urls = new();
-            List<string> ids = new();
-            for (int i = 0; i < illusts.Count; i++)
-            {
-                var item = illusts[i];
-                //dto.Alt += $"{i + 1} {item["alt"]}\r\n";
-                string url = item["url_sm"].GetValue<string>();
-                urls.Add(url);
-                ids.Add($"id{item["id"]}");
-            }
-
-            var images = DownloadImages(urls);
-
-            List<byte[]> dataList = new List<byte[]>();
-            foreach (var image in images)
-            {
-                dataList.Add(image.Value);
-            }
-            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, 360, 360, 90, 6));
-            dto.Images.Add(result);
-
-            return dto;
+            return HandleImages(dto, illusts, illusts.Count, false, 360, 360, 90, 6);
         }
     }
 }
