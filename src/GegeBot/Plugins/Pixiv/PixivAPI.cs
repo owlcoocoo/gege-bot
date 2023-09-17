@@ -93,7 +93,7 @@ namespace GegeBot.Plugins.Pixiv
 
                 col++;
             }
-            
+
             return newBitmap.Encode(SKEncodedImageFormat.Jpeg, quality).ToArray();
         }
 
@@ -227,7 +227,7 @@ namespace GegeBot.Plugins.Pixiv
             {
                 foreach(var item in images) 
                 {
-                    dto.Images.Add($"base64://{Convert.ToBase64String(item.Value)}");
+                    dto.Images.Add(item.Value);
                 }
 
                 dto.ImageMessage = $"{images.Length + index} / {dto.ImageCount} \r\n\r\n";
@@ -359,8 +359,7 @@ namespace GegeBot.Plugins.Pixiv
                 dataList.Add(image.Value);
             }
 
-            string result = "base64://" + Convert.ToBase64String(Puzzle(dataList, ids, perWidth, perHeight, quality, maxCols));
-            dto.Images.Add(result);
+            dto.Images.Add(Puzzle(dataList, ids, perWidth, perHeight, quality, maxCols));
 
             return dto;
         }

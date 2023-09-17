@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace CQHttp.DTOs
 {
-    public class CQCode
+    public class CQCode : IDisposable
     {
         private class CQCodeModel
         {
@@ -14,7 +14,7 @@ namespace CQHttp.DTOs
             public JsonObject data { get; set; } = new JsonObject();
         }
 
-        private readonly List<CQCodeModel> data = new List<CQCodeModel>();
+        private List<CQCodeModel> data = new List<CQCodeModel>();
 
 
         public CQCode()
@@ -197,6 +197,11 @@ namespace CQHttp.DTOs
 
         public void Clear()
         {
+            foreach (var item in data)
+            {
+                item.data.Clear();
+                item.data = null;
+            }
             data.Clear();
         }
 
@@ -236,6 +241,12 @@ namespace CQHttp.DTOs
         public JsonNode ToJson()
         {
             return Json.ToJsonNode(data);
+        }
+
+        public void Dispose()
+        {
+            Clear();
+            data = null;
         }
     }
 }

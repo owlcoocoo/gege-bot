@@ -1,7 +1,6 @@
 ﻿using CQHttp;
 using CQHttp.DTOs;
 using GegeBot.Plugins;
-using GegeBot.Plugins.Pixiv;
 using System.Reflection;
 
 namespace GegeBot

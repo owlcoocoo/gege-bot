@@ -187,7 +187,8 @@ namespace GegeBot.Plugins.Pixiv
                     cqCode.SetText(dto.ImageMessage);
                 foreach (var img in dto.Images)
                 {
-                    cqCode.SetImage(img);
+                    string base64Img = $"base64://{Convert.ToBase64String(img)}";
+                    cqCode.SetImage(base64Img);
                 }
                 cqBot.Message_QuickReply(obj, cqCode);
             }

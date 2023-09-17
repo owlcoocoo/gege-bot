@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Runtime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +50,7 @@ namespace CQHttp
 
             string json = Json.ToJsonString(req);
             var data = Encoding.UTF8.GetBytes(json);
-            return webSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+            return webSocket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
         public async void Send(CQAPIContext req)
@@ -104,7 +105,12 @@ namespace CQHttp
             }
 
             if (Session.MessageQueue.Count > 0) HandleMessageQueue();
-            else isHandlingMessageQueue = false;
+            else
+            {
+                isHandlingMessageQueue = false;
+                
+                GC.Collect();
+            }
         }
 
         private void HandleMessage(string json)
@@ -123,6 +129,7 @@ namespace CQHttp
         {
             CQEventRequest request = Json.FromJsonString<CQEventRequest>(json);
             ReceivedRequest?.Invoke(request);
+            GC.Collect();
         }
 
         private void HandleResponse(string json)
@@ -134,6 +141,7 @@ namespace CQHttp
             {
                 response.FireCallBack(context);
             }
+            GC.Collect();
         }
 
         private void NewTask(Action action)
@@ -163,7 +171,7 @@ namespace CQHttp
                 {
                     try
                     {
-                        result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
                         if (result.MessageType == WebSocketMessageType.Text)
                         {
                             var bytes = new byte[result.Count];
@@ -196,6 +204,8 @@ namespace CQHttp
                                 }
 
                                 sb.Clear();
+
+                                GC.Collect();
                             }
                         }
                     }
@@ -213,9 +223,11 @@ namespace CQHttp
 
         public void Dispose()
         {
-            webSocket.Abort();
-
-            GC.SuppressFinalize(this);
+            if (webSocket.State == WebSocketState.Open)
+            {
+                webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None).Wait();
+            }
+            webSocket.Dispose();
         }
     }
 }

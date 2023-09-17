@@ -25,16 +25,7 @@ namespace CQHttp
 
         public static JsonNode ToJsonNode<T>(T obj)
         {
-            string json = ToJsonString(obj);
-            return ToJsonNode(json);
+            return JsonSerializer.SerializeToNode(obj);
         }
-
-        public static bool GetBoolValue(this JsonObject obj, string key)
-        {
-            obj.TryGetPropertyValue(key, out var value);
-            if (value != null) return value.GetValue<bool>();
-            return false;
-        }
-
     }
 }
