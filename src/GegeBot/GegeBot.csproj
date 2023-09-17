@@ -5,10 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Platforms>AnyCPU</Platforms>
-    <FileVersion>0.1.0</FileVersion>
+    <FileVersion>0.1.2</FileVersion>
     <Version>$(FileVersion)</Version>
     <AssemblyVersion>$(FileVersion)</AssemblyVersion>
     <Authors>owlcoocoo</Authors>
+	
+	<!--<ServerGarbageCollection>false</ServerGarbageCollection>
+	<ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>-->
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.11" />
