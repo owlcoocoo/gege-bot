@@ -26,8 +26,8 @@
 	},
 	"Approve": {
 		// 自动同意好友请求
-		"AutoApproveFriendAdd": true,
+		"AutoApproveFriendAdd": false,
 		// 自动同意群邀请请求
-		"AutoApproveGroupInvite": true,
+		"AutoApproveGroupInvite": false,
 	},
 }
