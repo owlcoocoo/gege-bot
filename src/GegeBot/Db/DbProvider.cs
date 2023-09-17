@@ -4,7 +4,8 @@
     {
         public static IDb GetDb(string tableName)
         {
-            return new Sqlite("data\\store.db", tableName);
+            Directory.CreateDirectory("data");
+            return new Sqlite("data/store.db", tableName);
         }
     }
 }

@@ -12,8 +12,6 @@ namespace GegeBot.Db
             _connectionString = $"Data Source={dataSource}";
             _tableName = tableName;
 
-            Directory.CreateDirectory("data");
-
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
             var command = connection.CreateCommand();
