@@ -1,5 +1,6 @@
-﻿using CQHttp;
+using CQHttp;
 using CQHttp.DTOs;
+using System;
 
 namespace GegeBot.Plugins.Pixiv
 {
@@ -39,6 +40,28 @@ namespace GegeBot.Plugins.Pixiv
             }
         }
 
+        private int GetIllustIndex(CQEventMessageEx msg, string id, out string key)
+        {
+            key = "";
+            int index = 0;
+            if (!string.IsNullOrEmpty(id))
+            {
+                key = $"{BotSession.GetSessionKey(msg)}_{id}";
+                int.TryParse(PixivDb.Db.GetValue(key), out index);
+            }
+            return index;
+        }
+
+        private void SaveIllustIndex(string key, int index, int imageCount)
+        {
+            if (!string.IsNullOrEmpty(key))
+            {
+                index += PixivConfig.MaxImages;
+                if (index >= imageCount) index = 0;
+                PixivDb.Db.SetValue(key, index.ToString());
+            }
+        }
+
         private void CqBot_ReceivedMessage(CQEventMessageEx obj)
         {
             string text = CQCode.GetText(obj.message, out var atList).TrimStart();
@@ -69,18 +92,23 @@ namespace GegeBot.Plugins.Pixiv
                 }
                 else if (keyword.StartsWith("画师"))
                 {
-                    keyword = keyword[2..];
+                    string key = "";
+                    int index = 0;
 
+                    keyword = keyword[2..];
                     GetUserNameAndTag(keyword, out string user, out string tag);
+
                     if (keyword.StartsWith("id", true, null))
                     {
                         string id = keyword[2..].Trim();
-                        dto = pixivAPI.Touch_SearchUserIllusts(null, id, tag);
+                        dto = pixivAPI.Touch_SearchUserIllusts(null, id, tag, id => index = GetIllustIndex(obj, id, out key));
                     }
                     else
                     {
-                        dto = pixivAPI.Touch_SearchUserIllusts(user, tag);
+                        dto = pixivAPI.Touch_SearchUserIllusts(user, tag: tag, action: id => index = GetIllustIndex(obj, id, out key));
                     }
+
+                    SaveIllustIndex(key, index, dto.ImageCount);
                 }
                 else if (keyword.StartsWith("排行榜"))
                 {
@@ -118,15 +146,23 @@ namespace GegeBot.Plugins.Pixiv
                 }
                 else
                 {
+                    string key = "";
+                    int index = 0;
+
                     if (keyword.StartsWith("id", true, null))
                     {
                         string id = keyword[2..].Trim();
-                        dto = pixivAPI.Touch_SearchIllusts(null, id);
+
+                        index = GetIllustIndex(obj, id, out key);
+
+                        dto = pixivAPI.Touch_GetIllusts(id, index);
                     }
                     else
                     {
-                        dto = pixivAPI.Touch_SearchIllusts(keyword);
+                        dto = pixivAPI.Touch_SearchIllusts(keyword, id => index = GetIllustIndex(obj, id, out key));
                     }
+
+                    SaveIllustIndex(key, index, dto.ImageCount);
                 }
 
                 if (!string.IsNullOrEmpty(dto.Message))

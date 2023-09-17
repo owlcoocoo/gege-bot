@@ -1,4 +1,4 @@
-﻿using CQHttp;
+using CQHttp;
 using CQHttp.DTOs;
 using RestSharp;
 using SkiaSharp;
@@ -193,7 +193,7 @@ namespace GegeBot.Plugins.Pixiv
             return true;
         }
 
-        private PixivDto Touch_GetIllusts(PixivDto dto, string id)
+        private PixivDto Touch_GetIllusts(PixivDto dto, string id, int index = 0)
         {
             List<string> urls = new List<string>();
 
@@ -218,7 +218,8 @@ namespace GegeBot.Plugins.Pixiv
 
             dto.Alt += $"{illust_details["alt"]}\r\n作品id{illust_details["id"]}\r\n画师id{illust_details["user_id"]}";
 
-            urls = urls.Take(PixivConfig.MaxImages).ToList();
+            dto.ImageCount = urls.Count;
+            urls = urls.Skip(index).Take(PixivConfig.MaxImages).ToList();
             var images = DownloadImages(urls);
             if (images.Length < 1)
                 dto.Message = "图片下载失败";
@@ -228,6 +229,8 @@ namespace GegeBot.Plugins.Pixiv
                 {
                     dto.Images.Add($"base64://{Convert.ToBase64String(item.Value)}");
                 }
+
+                dto.ImageMessage = $"{images.Length + index} / {dto.ImageCount} \r\n\r\n";
             }
 
             return dto;
@@ -237,16 +240,11 @@ namespace GegeBot.Plugins.Pixiv
         /// 查找作品
         /// </summary>
         /// <param name="word">关键字</param>
-        /// <param name="id">作品id，如传入则无视word字段</param>
+        /// <param name="action">图片定位操作，提供作品id，需返回图片index。</param>
         /// <returns></returns>
-        public PixivDto Touch_SearchIllusts(string word, string id = "")
+        public PixivDto Touch_SearchIllusts(string word, Func<string, int> action = null)
         {
             PixivDto dto = new PixivDto();
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                return Touch_GetIllusts(dto, id);
-            }
 
             var request = new RestRequest($"https://www.pixiv.net/touch/ajax/search/illusts?include_meta=1&s_mode=s_tag&type=all&word={word}", Method.Get);
             RestResponse response = ExecuteAndRetry(request);
@@ -260,9 +258,22 @@ namespace GegeBot.Plugins.Pixiv
             var illusts = json_result["body"]["illusts"].AsArray();
             var n = new Random().Next(0, illusts.Count - 1);
             var illust = illusts[n];
-            return Touch_GetIllusts(dto, illust["id"].GetValue<string>());
+            string id = illust["id"].GetValue<string>();
+            int index = action?.Invoke(id) ?? 0;
+            return Touch_GetIllusts(dto, id, index);
         }
 
+        /// <summary>
+        /// 获取作品
+        /// </summary>
+        /// <param name="id">作品id</param>
+        /// <param name="index">定位图片</param>
+        /// <returns></returns>
+        public PixivDto Touch_GetIllusts(string id, int index = 0)
+        {
+            PixivDto dto = new PixivDto();
+            return Touch_GetIllusts(dto, id, index);
+        }
 
         private JsonArray Touch_GetUserIllusts(string user_id, string tag, out string error)
         {
@@ -304,8 +315,9 @@ namespace GegeBot.Plugins.Pixiv
         /// <param name="nick">用户名</param>
         /// <param name="user_id">用户id，如传入则无视nick字段</param>
         /// <param name="tag">作品标签</param>
+        /// <param name="action">图片定位操作，提供作品id，需返回图片index。</param>
         /// <returns></returns>
-        public PixivDto Touch_SearchUserIllusts(string nick, string user_id = "", string tag = "")
+        public PixivDto Touch_SearchUserIllusts(string nick, string user_id = "", string tag = "", Func<string, int> action = null)
         {
             PixivDto dto = new PixivDto();
 
@@ -320,7 +332,9 @@ namespace GegeBot.Plugins.Pixiv
 
             var n = new Random().Next(0, illusts.Count - 1);
             var illust = illusts[n];
-            return Touch_GetIllusts(dto, illust["id"].GetValue<string>());
+            string id = illust["id"].GetValue<string>();
+            int index = action?.Invoke(id) ?? 0;
+            return Touch_GetIllusts(dto, id, index);
         }
 
         private PixivDto HandleImages(PixivDto dto, JsonArray illusts, int count, bool needAlt, int perWidth, int perHeight, int quality, int maxCols)
