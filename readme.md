@@ -1,12 +1,38 @@
 # 简介
 
-一个以 C# 编写的机器人，基于 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的接口。
+一个以 C# 编写的聊天机器人，基于 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的接口。
 
-目前实现的功能：
+功能：
 
-- pixiv， 搜图、搜画师、预览图、排行榜、分批发送；
+- [ ] pixiv
+  
+  - [x] 关键字或id搜图
+  
+  - [x] 关键字或id搜画师
+  
+  - [x] 生成预览图
+  
+  - [x] 根据id搜图搜画师
+  
+  - [x] 同个id分批发送（某些作品放了上百张图片）
+  
+  - [x] 排行榜
+  
+  - [ ] 指定分页
 
-- 自动同意好友请求/群邀请。
+- [x] 自动同意好友请求/群邀请
+
+- [ ] 关键字梗图
+
+- [ ] 群聊复读
+
+- [ ] 接入 [[**llama.cpp**](https://github.com/ggerganov/llama.cpp)](https://github.com/ggerganov/llama.cpp)
+
+- [ ] 词库匹配
+  
+  - [ ] 群聊指定关键字自动回复
+  
+  - [ ] 语言模型回复
 
 # 部署
 
