@@ -28,11 +28,11 @@
 
 - [ ] 接入 [**llama.cpp**](https://github.com/ggerganov/llama.cpp)
 
+- [ ] 使用语言模型回复
+
 - [ ] 词库匹配
   
   - [ ] 群聊指定关键字自动回复
-  
-  - [ ] 语言模型回复
 
 # 部署
 
