@@ -26,9 +26,9 @@
 
 - [ ] 群聊复读
 
-- [ ] 接入 [**llama.cpp**](https://github.com/ggerganov/llama.cpp)
+- [x] 接入 [**llama.cpp**](https://github.com/ggerganov/llama.cpp)
 
-- [ ] 使用语言模型回复
+- [x] 使用语言模型回复
 
 - [ ] 词库匹配
   
