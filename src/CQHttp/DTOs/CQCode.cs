@@ -35,12 +35,14 @@ namespace CQHttp.DTOs
         {
             atQQ = new List<string>();
 
-            var matches = Regex.Matches(cqCode, "\\[(.*)\\]|(.)+");
+            var matches = Regex.Matches(cqCode, "\\[(.*?)\\]|[^\\[(.*?)\\]]+");
             if (matches.Count < 1) return cqCode;
 
             StringBuilder sb = new StringBuilder();
             foreach (var item in matches)
             {
+                if (string.IsNullOrWhiteSpace(item.ToString())) continue;
+
                 string codeText = item.ToString()?.TrimStart('[').TrimEnd(']') ?? "";
 
                 string[] str_array = codeText.ToString().Split(',');
