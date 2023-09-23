@@ -30,4 +30,24 @@
 		// 自动同意群邀请请求
 		"AutoApproveGroupInvite": false,
 	},
+	"LlamaCpp": {
+		// 服务地址
+		"ServerAddress": "http://127.0.0.1:8088",
+		// 记录消息日志
+		"WriteMessageLog": false,
+		// 机器人名字
+		"BotName": "gege",
+		// 提示词
+		"Prompt": "你的名字是gege，你是一个乐于助人的助手。",
+		// 模型对话参数，调整生成文本的随机性
+		"Temperature": 0.8,
+		// 最大记忆对话数
+		"MemoryLimit": 30,
+		// 记忆重置命令
+		"ResetCommand": "重置记忆",
+		// 重置后发送的消息，不填不发送
+		"ResetMessage": "记忆已重置。",
+		// 要过滤掉的文本，避免触发回复
+		"FilterText": ["--重载配置"]
+	},
 }

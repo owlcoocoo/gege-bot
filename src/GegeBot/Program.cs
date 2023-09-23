@@ -22,7 +22,7 @@ namespace GegeBot
 
         static void Main(string[] args)
         {
-            log = new Log("logs");
+            log = new Log();
 
             config = new Config("config.json");
             config.Load();

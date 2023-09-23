@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CQHttp
 {
-    public class CQBot : IDisposable
+    public class CQBot
     {
         /// <summary>
         /// 异常处理
@@ -217,15 +217,15 @@ namespace CQHttp
                 }
                 while (result == null || !result.CloseStatus.HasValue);
 
-                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+                Close();
             });
         }
 
-        public void Dispose()
+        private async void Close()
         {
             if (webSocket.State == WebSocketState.Open)
             {
-                webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None).Wait();
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
             }
             webSocket.Dispose();
         }
