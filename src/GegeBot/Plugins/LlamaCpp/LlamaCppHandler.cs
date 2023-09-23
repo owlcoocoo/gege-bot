@@ -1,5 +1,6 @@
 ﻿using CQHttp;
 using CQHttp.DTOs;
+using System.Collections;
 using System.Text;
 
 namespace GegeBot.Plugins.LlamaCpp
@@ -11,9 +12,24 @@ namespace GegeBot.Plugins.LlamaCpp
         readonly LlamaCppAPI llamaCppAPI = new LlamaCppAPI(LlamaCppConfig.ServerAddress);
         readonly Log log = new Log("llama_cpp");
 
+        readonly Hashtable dictionary = new Hashtable();
 
         public LlamaCppHandler(CQBot bot)
         {
+            foreach (string file in LlamaCppConfig.DictFile)
+            {
+                Console.WriteLine($"[LlamaCpp]加载词库 {file}");
+
+                string data = File.ReadAllText(file);
+                var jsonArray = Json.ToJsonNode(data).AsArray();
+                foreach (var item in jsonArray)
+                {
+                    dictionary.Add(item.ToString(), null);
+                }
+            }
+
+            Console.WriteLine($"[LlamaCpp]词库加载完毕，共计 {dictionary.Count} 条。");
+
             cqBot = bot;
             cqBot.ReceivedMessage += CqBot_ReceivedMessage;
         }
@@ -44,11 +60,20 @@ namespace GegeBot.Plugins.LlamaCpp
         private void CqBot_ReceivedMessage(CQEventMessageEx obj)
         {
             string text = CQCode.GetText(obj.message, out var atList).TrimStart();
-            if (obj.message_type == CQMessageType.Group
-                && (!atList.Any() || !atList.Contains(obj.self_id.ToString())))
+
+            bool isKeyword = dictionary.ContainsKey(text);
+
+            if (!isKeyword && obj.message_type == CQMessageType.Group &&
+                (!atList.Any() || !atList.Contains(obj.self_id.ToString())))
                 return;
 
-            if (LlamaCppConfig.FilterText.Contains(text)) return;
+            foreach (string keyword in LlamaCppConfig.FilterText)
+            {
+                if (text.StartsWith(keyword))
+                {
+                    return;
+                }
+            }
 
             string value = GetDbValue(obj, out string key);
 

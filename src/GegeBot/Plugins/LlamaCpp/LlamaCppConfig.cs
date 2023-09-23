@@ -18,5 +18,6 @@ namespace GegeBot.Plugins.LlamaCpp
         public static string ResetCommand { get; set; }
         public static string ResetMessage { get; set; }
         public static List<string> FilterText { get; set; } = new List<string>();
+        public static List<string> DictFile { get; set; } = new List<string>();
     }
 }

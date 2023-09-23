@@ -33,6 +33,8 @@ namespace GegeBot.Plugins.LlamaCpp
             requestObj.Add("stop", stopArray);
             request.AddJsonBody(requestObj.ToJsonString(), false);
             RestResponse response = client.Execute(request);
+            if (string.IsNullOrWhiteSpace(response.Content))
+                return "";
             JsonNode json_result = Json.ToJsonNode(response.Content);
             string content = json_result["content"].GetValue<string>();
             bool truncated = json_result["truncated"].GetValue<bool>();
