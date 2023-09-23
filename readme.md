@@ -26,13 +26,11 @@
 
 - [ ] 群聊复读
 
-- [x] 接入 [**llama.cpp**](https://github.com/ggerganov/llama.cpp)
+- [x] 接入 [llama.cpp](https://github.com/ggerganov/llama.cpp)
 
 - [x] 使用语言模型回复
 
-- [ ] 词库匹配
-  
-  - [ ] 群聊指定关键字自动回复
+- [x] 群聊匹配词库关键字自动回复
 
 # 部署
 
