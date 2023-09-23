@@ -61,7 +61,7 @@ namespace GegeBot.Plugins.LlamaCpp
         {
             string text = CQCode.GetText(obj.message, out var atList).TrimStart();
 
-            bool isKeyword = dictionary.ContainsKey(text);
+            bool isKeyword = !string.IsNullOrWhiteSpace(text) && dictionary.ContainsKey(text);
 
             if (!isKeyword && obj.message_type == CQMessageType.Group &&
                 (!atList.Any() || !atList.Contains(obj.self_id.ToString())))
