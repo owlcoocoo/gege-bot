@@ -42,7 +42,7 @@
 		// 模型对话参数，调整生成文本的随机性
 		"Temperature": 0.8,
 		// 最大记忆对话数
-		"MemoryLimit": 30,
+		"MemoryLimit": 20,
 		// 记忆重置命令
 		"ResetCommand": "重置记忆",
 		// 重置后发送的消息，不填不发送
@@ -50,6 +50,8 @@
 		// 要过滤掉的文本，避免触发回复
 		"FilterText": ["--重载配置", "搜"],
 		// 字典文件集，用于自动回复
-		"DictFile": ["dict.json"]
+		"DictFile": ["dict.json"],
+		// 自动回复概率 0.0 - 1.0
+		"ReplyProbability": 0.5,
 	},
 }

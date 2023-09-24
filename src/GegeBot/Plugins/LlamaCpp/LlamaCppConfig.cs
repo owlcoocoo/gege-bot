@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GegeBot.Plugins.LlamaCpp
+﻿namespace GegeBot.Plugins.LlamaCpp
 {
     [Config("LlamaCpp")]
     internal class LlamaCppConfig
@@ -19,5 +13,6 @@ namespace GegeBot.Plugins.LlamaCpp
         public static string ResetMessage { get; set; }
         public static List<string> FilterText { get; set; } = new List<string>();
         public static List<string> DictFile { get; set; } = new List<string>();
+        public static double ReplyProbability { get; set; }
     }
 }

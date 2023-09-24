@@ -61,12 +61,6 @@ namespace GegeBot.Plugins.LlamaCpp
         {
             string text = CQCode.GetText(obj.message, out var atList).TrimStart();
 
-            bool isKeyword = !string.IsNullOrWhiteSpace(text) && dictionary.ContainsKey(text);
-
-            if (!isKeyword && obj.message_type == CQMessageType.Group &&
-                (!atList.Any() || !atList.Contains(obj.self_id.ToString())))
-                return;
-
             foreach (string keyword in LlamaCppConfig.FilterText)
             {
                 if (text.StartsWith(keyword))
@@ -74,6 +68,19 @@ namespace GegeBot.Plugins.LlamaCpp
                     return;
                 }
             }
+
+            bool isKeyword = LlamaCppConfig.ReplyProbability > 0 && dictionary.Count > 0
+                             && !string.IsNullOrWhiteSpace(text) && dictionary.ContainsKey(text);
+            if (isKeyword)
+            {
+                double num = new Random().NextDouble();
+                if (num >= LlamaCppConfig.ReplyProbability)
+                    isKeyword = false;
+            }
+
+            if (!isKeyword && obj.message_type == CQMessageType.Group &&
+                (!atList.Any() || !atList.Contains(obj.self_id.ToString())))
+                return;
 
             string value = GetDbValue(obj, out string key);
 
@@ -119,7 +126,7 @@ namespace GegeBot.Plugins.LlamaCpp
                 UserContent = text,
                 BotContent = content
             };
-            if (model.Chats.Count >= LlamaCppConfig.MemoryLimit)
+            while (model.Chats.Count >= LlamaCppConfig.MemoryLimit)
             {
                 model.Chats.RemoveAt(0);
             }
