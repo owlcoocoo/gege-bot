@@ -1,6 +1,6 @@
 # 简介
 
-一个以 C# 编写的聊天机器人，基于 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的接口。
+一个以 C# 编写的机器人，基于 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的接口。
 
 功能：
 
@@ -19,6 +19,8 @@
   - [x] 排行榜
   
   - [ ] 指定分页
+  
+  - [ ] 随机作品且不重复
 
 - [x] 自动同意好友请求/群邀请
 
