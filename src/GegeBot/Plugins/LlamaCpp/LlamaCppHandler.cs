@@ -113,10 +113,12 @@ namespace GegeBot.Plugins.LlamaCpp
 
             if (!model.Stop.Any())
                 model.Stop.Add("</s>");
-            if (!model.Stop.Contains(botName))
-                model.Stop.Add($"{botName}:");
-            if (!model.Stop.Contains(userName))
-                model.Stop.Add($"{userName}:");
+            string name = $"{botName}:";
+            if (!model.Stop.Contains(name))
+                model.Stop.Add(name);
+            name = $"{userName}:";
+            if (!model.Stop.Contains(name))
+                model.Stop.Add(name);
             string content = llamaCppAPI.Completion(prompt, LlamaCppConfig.Temperature, model.Stop);
 
             LlamaCppChatModel chatModel = new LlamaCppChatModel
