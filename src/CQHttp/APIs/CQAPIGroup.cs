@@ -52,7 +52,7 @@ namespace CQHttp
                 memberInfo = result;
                 ret = true;
             });
-            while (!ret) Task.Yield();
+            while (!ret) Task.Yield().GetAwaiter().GetResult();
             return memberInfo;
         }
     }
