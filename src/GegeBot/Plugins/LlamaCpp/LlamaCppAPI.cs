@@ -13,6 +13,7 @@ namespace GegeBot.Plugins.LlamaCpp
         {
             _serverAddress = serverAddress;
             client = new RestClient();
+            client.AddDefaultHeader("Content-Type", "application/json");
             client.AddDefaultHeader("Accept", "application/json");
         }
 
