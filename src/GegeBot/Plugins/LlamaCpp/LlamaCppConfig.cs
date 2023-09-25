@@ -4,7 +4,8 @@
     internal class LlamaCppConfig
     {
         public static string ServerAddress { get; set; }
-        public static bool WriteMessageLog { get; set; } = false;
+        public static bool WriteMessageLog { get; set; }
+        public static bool UseGroupCard { get; set; }
         public static string BotName { get; set; }
         public static string Prompt { get; set; }
         public static decimal Temperature { get; set; } = 0.8m;

@@ -35,10 +35,12 @@
 		"ServerAddress": "http://127.0.0.1:8088",
 		// 记录消息日志
 		"WriteMessageLog": false,
+		// 使用群名片，启用后机器人和群员的名字为群名片
+		"UseGroupCard": false,
 		// 机器人名字
 		"BotName": "gege",
 		// 提示词
-		"Prompt": "你的名字是gege，你是一个乐于助人的助手。",
+		"Prompt": "You are a helpful assistant. 你是一个乐于助人的助手。",
 		// 模型对话参数，调整生成文本的随机性
 		"Temperature": 0.8,
 		// 最大记忆对话数

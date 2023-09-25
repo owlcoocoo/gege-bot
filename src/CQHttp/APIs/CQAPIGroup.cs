@@ -1,4 +1,6 @@
 ﻿using CQHttp.DTOs;
+using System;
+using System.Threading.Tasks;
 
 namespace CQHttp
 {
@@ -17,6 +19,41 @@ namespace CQHttp
             var context = new CQAPIContext(request);
             request.@params = Json.ToJsonNode(new { flag, sub_type, approve, reason });
             bot.Send(context);
+        }
+
+        /// <summary>
+        /// 获取群成员信息
+        /// </summary>
+        /// <param name="group_id">群号</param>
+        /// <param name="user_id">QQ 号</param>
+        /// <param name="no_cache">是否不使用缓存（使用缓存可能更新不及时, 但响应更快）</param>
+        public static void Group_GetGroupMemberInfo(this CQBot bot, long group_id, long user_id, bool no_cache = false, Action<CQGroupMemberInfo> callback = null)
+        {
+            CQRequest request = new CQRequest("get_group_member_info");
+            var context = new CQAPIContext(request);
+            context.SetCallBack(callback);
+            request.echo = context.Id;
+            request.@params = Json.ToJsonNode(new { group_id, user_id, no_cache });
+            bot.Send(context);
+        }
+
+        /// <summary>
+        /// 获取群成员信息
+        /// </summary>
+        /// <param name="group_id">群号</param>
+        /// <param name="user_id">QQ 号</param>
+        /// <param name="no_cache">是否不使用缓存（使用缓存可能更新不及时, 但响应更快）</param>
+        public static CQGroupMemberInfo Group_GetGroupMemberInfoSync(this CQBot bot, long group_id, long user_id, bool no_cache = false)
+        {
+            CQGroupMemberInfo memberInfo = null;
+            bool ret = false;
+            bot.Group_GetGroupMemberInfo(group_id, user_id, no_cache, callback: result =>
+            {
+                memberInfo = result;
+                ret = true;
+            });
+            while (!ret) Task.Yield();
+            return memberInfo;
         }
     }
 }

@@ -63,11 +63,8 @@ namespace GegeBot
                     {
                         config.Load();
 
-                        CQRequestMessage requestMessage = new();
-                        requestMessage.message_type = obj.message_type;
-                        requestMessage.user_id = obj.user_id;
-                        requestMessage.message = new CQCode($"已重新加载配置").SetReply(obj.message_id).ToJson();
-                        cqBot.Message_SendMsg(requestMessage);
+                        var cqCode = new CQCode($"已重新加载配置").SetReply(obj.message_id);
+                        cqBot.Message_QuickReply(obj, cqCode);
                     }
                 }
             }
@@ -94,30 +91,17 @@ namespace GegeBot
 
                 log.WriteError($"{ex}");
 
-                CQRequestMessage requestMessage = new();
-                requestMessage.message_type = obj.message_type;
-
-                if (obj.message_type == CQMessageType.Private)
+                var cqCode = new CQCode($"发生错误：{ex.Message}").SetReply(obj.message_id);
+                cqBot.Message_QuickReply(obj, cqCode, result =>
                 {
-                    requestMessage.user_id = obj.user_id;
-                }
-                else if (obj.message_type == CQMessageType.Group)
-                {
-                    requestMessage.group_id = obj.group_id;
-                }
-                else { return; }
-
-                requestMessage.message = new CQCode($"发生错误：{ex.Message}").SetReply(obj.message_id).ToJson();
-                cqBot.Message_SendMsg(requestMessage, result =>
-                {
-                    if (BotConfig.DeleteErrorMessageTimeout < 1) return;
+                    if (result == null || BotConfig.DeleteErrorMessageTimeout < 1) return;
 
                     Task.Delay(1000 * BotConfig.DeleteErrorMessageTimeout).Wait();
                     cqBot.Message_DeleteMsg(result.message_id);
                 });
             }
-            else log.WriteError($"{ex}");
-
+            else
+                log.WriteError($"{ex}");
         }
     }
 }
