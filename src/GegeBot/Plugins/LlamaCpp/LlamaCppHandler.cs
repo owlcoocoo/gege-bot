@@ -50,8 +50,8 @@ namespace GegeBot.Plugins.LlamaCpp
             StringBuilder sb = new StringBuilder();
             foreach (var item in model.Chats)
             {
-                sb.Append($"\n{item.UserName}:{item.UserContent}");
-                sb.Append($"\n{item.BotName}:{item.BotContent}");
+                sb.Append($"\n{item.UserName}:{item.UserContent}</s>");
+                sb.Append($"\n{item.BotName}:{item.BotContent}</s>");
             }
 
             return sb.ToString();
@@ -106,6 +106,7 @@ namespace GegeBot.Plugins.LlamaCpp
             }
 
             string prompt = LlamaCppConfig.Prompt;
+            prompt = prompt.Replace("{{BotName}}", botName);
             LlamaCppModel model = null;
 
             if (!string.IsNullOrEmpty(value))
@@ -119,17 +120,17 @@ namespace GegeBot.Plugins.LlamaCpp
                 model = new LlamaCppModel();
             }
 
-            prompt += $"\n{userName}:{text}";
+            prompt += $"\n{userName}:{text}</s>";
             prompt += $"\n{botName}:";
 
             if (!model.Stop.Any())
                 model.Stop.Add("</s>");
-            string name = $"{botName}:";
-            if (!model.Stop.Contains(name))
-                model.Stop.Add(name);
-            name = $"{userName}:";
-            if (!model.Stop.Contains(name))
-                model.Stop.Add(name);
+            //string name = $"{botName}:";
+            //if (!model.Stop.Contains(name))
+            //    model.Stop.Add(name);
+            //name = $"{userName}:";
+            //if (!model.Stop.Contains(name))
+            //    model.Stop.Add(name);
             string content = llamaCppAPI.Completion(prompt, LlamaCppConfig.Temperature, model.Stop);
 
             LlamaCppChatModel chatModel = new LlamaCppChatModel

@@ -22,6 +22,9 @@ namespace GegeBot
 
         static void Main(string[] args)
         {
+
+            Console.WriteLine($"\n\n欢迎使用 gege-bot，当前版本：v{Assembly.GetExecutingAssembly().GetName().Version}\n\n");
+
             log = new Log();
 
             config = new Config("config.json");
