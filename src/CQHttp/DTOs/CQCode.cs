@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -181,6 +182,16 @@ namespace CQHttp.DTOs
             model.data.Add("time", DateTimeOffset.Now.ToUnixTimeSeconds());
             model.data.Add("seq", seq);
             data.Add(model);
+            return this;
+        }
+
+        /// <summary>
+        /// 清除所有回复
+        /// </summary>
+        /// <returns></returns>
+        public CQCode RemoveAllReply()
+        {
+            data.RemoveAll(a => a.type == "reply");
             return this;
         }
 

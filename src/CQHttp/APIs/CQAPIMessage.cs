@@ -39,6 +39,12 @@ namespace CQHttp
             }
             else return;
 
+            // 非好友，群临时会话，不引用回复消息
+            if (msg.sender != null && msg.sender.group_id != null)
+            {
+                cqCode.RemoveAllReply();
+            }
+
             CQRequest request = new CQRequest("send_msg");
             var context = new CQAPIContext(request);
             context.SetCallBack(callback);
