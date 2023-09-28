@@ -39,7 +39,7 @@ namespace CQHttp
             }
             else return;
 
-            // 非好友，群临时会话，不引用回复消息
+            // 非好友，群临时会话，回复不引用消息
             if (msg.sender != null && msg.sender.group_id != null)
             {
                 cqCode.RemoveAllReply();
