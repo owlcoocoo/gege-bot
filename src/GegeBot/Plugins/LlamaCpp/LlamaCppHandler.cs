@@ -100,9 +100,8 @@ namespace GegeBot.Plugins.LlamaCpp
                 if (memberInfo != null && !string.IsNullOrEmpty(memberInfo.card))
                     botName = memberInfo.card;
 
-                memberInfo = cqBot.Group_GetGroupMemberInfoSync(obj.group_id, obj.user_id);
-                if (memberInfo != null && !string.IsNullOrEmpty(memberInfo.card))
-                    userName = memberInfo.card;
+                if (!string.IsNullOrEmpty(obj.sender.card))
+                    userName = obj.sender.card;
             }
 
             string prompt = LlamaCppConfig.Prompt;
@@ -140,13 +139,16 @@ namespace GegeBot.Plugins.LlamaCpp
                 UserContent = text,
                 BotContent = content
             };
-            while (model.Chats.Count >= LlamaCppConfig.MemoryLimit)
+            if (model.Chats.Count > LlamaCppConfig.MemoryLimit)
             {
-                model.Chats.RemoveAt(0);
+                SaveDbValue(key, "");
             }
-            model.Chats.Add(chatModel);
-            SaveDbValue(key, Json.ToJsonString(model));
-
+            else
+            {
+                model.Chats.Add(chatModel);
+                SaveDbValue(key, Json.ToJsonString(model));
+            }
+            
             if (LlamaCppConfig.WriteMessageLog)
                 log.WriteInfo($"\n{userName}:{text}\n{botName}:{content}");
 

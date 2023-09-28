@@ -38,11 +38,6 @@ namespace GegeBot.Plugins.LlamaCpp
                 return "";
             JsonNode json_result = Json.ToJsonNode(response.Content);
             string content = json_result["content"].GetValue<string>();
-            bool truncated = json_result["truncated"].GetValue<bool>();
-            if (truncated)
-            {
-                content += Completion(prompt, temperature, stop);
-            }
             return content;
         }
     }
