@@ -50,8 +50,8 @@ namespace GegeBot.Plugins.LlamaCpp
             StringBuilder sb = new StringBuilder();
             foreach (var item in model.Chats)
             {
-                sb.Append($"\n{item.UserName}:{item.UserContent}</s>");
-                sb.Append($"\n{item.BotName}:{item.BotContent}</s>");
+                sb.Append($"\n{item.UserName}:{item.UserContent}{LlamaCppConfig.StopText}");
+                sb.Append($"\n{item.BotName}:{item.BotContent}{LlamaCppConfig.StopText}");
             }
 
             return sb.ToString();
@@ -104,10 +104,13 @@ namespace GegeBot.Plugins.LlamaCpp
                     userName = obj.sender.card;
             }
 
+
             string prompt = LlamaCppConfig.Prompt;
             prompt = prompt.Replace("{{BotName}}", botName);
-            LlamaCppModel model = null;
+            prompt = prompt.Replace("{{StopText}}", LlamaCppConfig.StopText);
+            var tokens = llamaCppAPI.Tokenize(prompt);
 
+            LlamaCppModel model = null;
             if (!string.IsNullOrEmpty(value))
                 model = Json.FromJsonString<LlamaCppModel>(value);
             if (model != null)
@@ -119,18 +122,21 @@ namespace GegeBot.Plugins.LlamaCpp
                 model = new LlamaCppModel();
             }
 
-            prompt += $"\n{userName}:{text}</s>";
+            prompt += $"\n{userName}:{text}{LlamaCppConfig.StopText}";
             prompt += $"\n{botName}:";
 
-            if (!model.Stop.Any())
-                model.Stop.Add("</s>");
+            model.Stop.Clear();
+            model.Stop.Add(LlamaCppConfig.StopText);
+            //if (!model.Stop.Any())
+            //    model.Stop.Add(LlamaCppConfig.StopText);
             //string name = $"{botName}:";
             //if (!model.Stop.Contains(name))
             //    model.Stop.Add(name);
             //name = $"{userName}:";
             //if (!model.Stop.Contains(name))
             //    model.Stop.Add(name);
-            string content = llamaCppAPI.Completion(prompt, LlamaCppConfig.Temperature, model.Stop);
+
+            string content = llamaCppAPI.Completion(prompt, LlamaCppConfig.Temperature, model.Stop, n_keep: tokens.Count);
 
             LlamaCppChatModel chatModel = new LlamaCppChatModel
             {
