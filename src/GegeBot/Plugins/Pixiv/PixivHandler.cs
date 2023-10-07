@@ -5,7 +5,7 @@ using System;
 namespace GegeBot.Plugins.Pixiv
 {
     [Plugin]
-    public class PixivImpl
+    public class PixivHandler
     {
         readonly CQBot cqBot;
         readonly PixivAPI pixivAPI = new PixivAPI();
@@ -22,7 +22,7 @@ namespace GegeBot.Plugins.Pixiv
                         { "受女性欢迎", "female" },
                     };
 
-        public PixivImpl(CQBot bot)
+        public PixivHandler(CQBot bot)
         {
             cqBot = bot;
             cqBot.ReceivedMessage += CqBot_ReceivedMessage;
