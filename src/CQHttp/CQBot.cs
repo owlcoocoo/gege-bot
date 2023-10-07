@@ -31,7 +31,10 @@ namespace CQHttp
         /// 接收请求，加好友请求，加群请求／邀请。
         /// </summary>
         public event Action<CQEventRequest> ReceivedRequest = null;
-
+        /// <summary>
+        /// 处理群禁言，返回 true 不处理消息
+        /// </summary>
+        public Func<CQEventMessageEx, bool> HandleGroupBan { get; set; } = null;
 
         private readonly ClientWebSocket webSocket = new ClientWebSocket();
 
@@ -82,19 +85,28 @@ namespace CQHttp
                 var obj = Session.MessageQueue.Dequeue();
                 Session.CurrentMessage = obj;
 
-                ReceivedMessage.Invoke(obj);
-
-                if (ReceivedPrivateMessage != null && obj.message_type == CQMessageType.Private)
+                bool isBanned = false;
+                if (HandleGroupBan != null)
                 {
-                    string json = Json.ToJsonString(obj);
-                    var message = Json.FromJsonString<CQEventMessagePrivate>(json);
-                    ReceivedPrivateMessage.Invoke(message);
+                    isBanned = HandleGroupBan(obj);
                 }
-                else if (ReceivedGroupMessage != null && obj.message_type == CQMessageType.Group)
+
+                if (!isBanned)
                 {
-                    string json = Json.ToJsonString(obj);
-                    var message = Json.FromJsonString<CQEventMessageGroup>(json);
-                    ReceivedGroupMessage.Invoke(message);
+                    ReceivedMessage.Invoke(obj);
+
+                    if (ReceivedPrivateMessage != null && obj.message_type == CQMessageType.Private)
+                    {
+                        string json = Json.ToJsonString(obj);
+                        var message = Json.FromJsonString<CQEventMessagePrivate>(json);
+                        ReceivedPrivateMessage.Invoke(message);
+                    }
+                    else if (ReceivedGroupMessage != null && obj.message_type == CQMessageType.Group)
+                    {
+                        string json = Json.ToJsonString(obj);
+                        var message = Json.FromJsonString<CQEventMessageGroup>(json);
+                        ReceivedGroupMessage.Invoke(message);
+                    }
                 }
 
                 Session.CurrentMessage = null;
