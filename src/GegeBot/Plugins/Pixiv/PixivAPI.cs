@@ -88,9 +88,9 @@ namespace GegeBot.Plugins.Pixiv
                     canvas.DrawText(text[i], col * perWidth + perWidth / 2, row * (perHeight + textSize) + (float)(textSize * 0.8), paint);
                     textHeight = (row + 1) * textSize;
                 }
-                
-                canvas.DrawBitmap(bitmap, col * perWidth, textHeight + row * perHeight);
 
+                canvas.DrawBitmap(bitmap, col * perWidth, textHeight + row * perHeight);
+                
                 col++;
             }
 
@@ -155,24 +155,17 @@ namespace GegeBot.Plugins.Pixiv
         private KeyValuePair<int, byte[]>[] DownloadImages(List<string> urls)
         {
             ConcurrentDictionary<int, byte[]> imageDict = new();
-            List<Task> tasks = new();
 
-            for (int i = 0; i < urls.Count; i++)
+            Parallel.For(0, urls.Count, (i) =>
             {
                 string url = urls[i];
-                Task task = new Task(new Action<object>((i) =>
+                var result = Download(url).Result;
+                if (result != null)
                 {
-                    var result = Download(url).Result;
-                    if (result != null)
-                    {
-                        imageDict.TryAdd((int)i, result);
-                    }
-                }), i);
-                tasks.Add(task);
-                task.Start();
-            }
+                    imageDict.TryAdd(i, result);
+                }
+            });
 
-            Task.WaitAll(tasks.ToArray());
             return imageDict.OrderBy(a => a.Key).ToArray();
         }
 

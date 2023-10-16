@@ -173,7 +173,7 @@ namespace CQHttp
 
         public Task Run()
         {
-            return Task.Run(async () =>
+            return Task.Factory.StartNew(() =>
             {
                 WebSocketReceiveResult result = null;
                 StringBuilder sb = new StringBuilder();
@@ -183,7 +183,7 @@ namespace CQHttp
                 {
                     try
                     {
-                        result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                        result = webSocket.ReceiveAsync(buffer, CancellationToken.None).Result;
                         if (result.MessageType == WebSocketMessageType.Text)
                         {
                             var bytes = new byte[result.Count];
@@ -230,7 +230,7 @@ namespace CQHttp
                 while (result == null || !result.CloseStatus.HasValue);
 
                 Close();
-            });
+            }, TaskCreationOptions.LongRunning);
         }
 
         private async void Close()
