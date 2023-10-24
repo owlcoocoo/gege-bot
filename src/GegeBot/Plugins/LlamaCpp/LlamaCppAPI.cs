@@ -37,8 +37,10 @@ namespace GegeBot.Plugins.LlamaCpp
             requestObj.Add("stream", false);
             requestObj.Add("temperature", temperature);
             requestObj.Add("n_predict", n_predict);
+            requestObj.Add("repeat_last_n", n_predict);
             requestObj.Add("n_keep", n_keep);
             requestObj.Add("prompt", prompt);
+            requestObj.Add("cache_prompt", true);
             JsonArray stopArray = new JsonArray();
             foreach (var item in stop)
             {

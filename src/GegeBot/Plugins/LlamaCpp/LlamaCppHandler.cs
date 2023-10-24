@@ -50,8 +50,8 @@ namespace GegeBot.Plugins.LlamaCpp
             StringBuilder sb = new StringBuilder();
             foreach (var item in model.Chats)
             {
-                sb.Append($"\n{item.UserName}:{item.UserContent}{LlamaCppConfig.StopText}");
-                sb.Append($"\n{item.BotName}:{item.BotContent}{LlamaCppConfig.StopText}");
+                sb.Append($"\n{item.UserName}:{item.UserContent}");
+                sb.Append($"\n{item.BotName}:{item.BotContent}");
             }
 
             return sb.ToString();
@@ -82,16 +82,6 @@ namespace GegeBot.Plugins.LlamaCpp
                 (!atList.Any() || !atList.Contains(obj.self_id.ToString())))
                 return;
 
-            string value = GetDbValue(obj, out string key);
-
-            if (!string.IsNullOrEmpty(LlamaCppConfig.ResetCommand) && text == LlamaCppConfig.ResetCommand)
-            {
-                SaveDbValue(key, "");
-                if (!string.IsNullOrEmpty(LlamaCppConfig.ResetMessage))
-                    cqBot.Message_QuickReply(obj, new CQCode().SetReply(obj.message_id).SetText(LlamaCppConfig.ResetMessage));
-                return;
-            }
-
             string botName = LlamaCppConfig.BotName;
             string userName = obj.sender.nickname;
             if (LlamaCppConfig.UseGroupCard && obj.message_type == CQMessageType.Group)
@@ -104,6 +94,19 @@ namespace GegeBot.Plugins.LlamaCpp
                     userName = obj.sender.card;
             }
 
+            int retryCounter = 0;
+
+        RETRY:
+
+            string value = GetDbValue(obj, out string key);
+
+            if (!string.IsNullOrEmpty(LlamaCppConfig.ResetCommand) && text == LlamaCppConfig.ResetCommand)
+            {
+                SaveDbValue(key, "");
+                if (!string.IsNullOrEmpty(LlamaCppConfig.ResetMessage))
+                    cqBot.Message_QuickReply(obj, new CQCode().SetReply(obj.message_id).SetText(LlamaCppConfig.ResetMessage));
+                return;
+            }
 
             string prompt = LlamaCppConfig.Prompt;
             prompt = prompt.Replace("{{BotName}}", botName);
@@ -122,21 +125,25 @@ namespace GegeBot.Plugins.LlamaCpp
                 model = new LlamaCppModel();
             }
 
-            prompt += $"\n{userName}:{text}{LlamaCppConfig.StopText}";
+            prompt += $"\n{userName}:{text}";
             prompt += $"\n{botName}:";
 
-            model.Stop.Clear();
-            model.Stop.Add(LlamaCppConfig.StopText);
-            //if (!model.Stop.Any())
-            //    model.Stop.Add(LlamaCppConfig.StopText);
-            //string name = $"{botName}:";
-            //if (!model.Stop.Contains(name))
-            //    model.Stop.Add(name);
-            //name = $"{userName}:";
-            //if (!model.Stop.Contains(name))
-            //    model.Stop.Add(name);
+            if (!string.IsNullOrEmpty(LlamaCppConfig.StopText) && !model.Stop.Contains(LlamaCppConfig.StopText))
+                model.Stop.Add(LlamaCppConfig.StopText);
+            string name = $"{userName}:";
+            if (!model.Stop.Contains(name))
+                model.Stop.Add(name);
 
             string content = llamaCppAPI.Completion(prompt, LlamaCppConfig.Temperature, model.Stop, n_keep: tokens.Count);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                if (retryCounter < 1)
+                {
+                    SaveDbValue(key, "");
+                    retryCounter++;
+                    goto RETRY;
+                }
+            }
 
             LlamaCppChatModel chatModel = new LlamaCppChatModel
             {
