@@ -1,6 +1,5 @@
 ﻿using CQHttp;
 using CQHttp.DTOs;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace GegeBot.Plugins.Pixiv
 {
