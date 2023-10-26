@@ -19,6 +19,7 @@ namespace GegeBot
         static CQBot cqBot;
         static Config config;
         static Log log;
+        static List<IPlugin> plugins = new List<IPlugin>();
 
         static void Main(string[] args)
         {
@@ -41,7 +42,7 @@ namespace GegeBot
                 {
                     if (Activator.CreateInstance(p, cqBot) is IPlugin instance)
                     {
-
+                        plugins.Add(instance);
                     }
                 }
                 catch (Exception ex)
@@ -65,6 +66,7 @@ namespace GegeBot
                     if (text == "--重载配置")
                     {
                         config.Load();
+                        plugins.ForEach(p => p.Reload());
 
                         var cqCode = new CQCode($"已重新加载配置").SetReply(obj.message_id);
                         cqBot.Message_QuickReply(obj, cqCode);

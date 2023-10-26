@@ -55,5 +55,53 @@ namespace CQHttp
             while (!ret) Task.Yield().GetAwaiter().GetResult();
             return memberInfo;
         }
+
+        /// <summary>
+        /// 获取群信息
+        /// </summary>
+        /// <param name="group_id">群号</param>
+        /// <param name="no_cache">是否不使用缓存（使用缓存可能更新不及时, 但响应更快）</param>
+        public static void Group_GetGroupInfo(this CQBot bot, long group_id, Action<CQGroupInfo> callback, bool no_cache = false)
+        {
+            CQRequest request = new CQRequest("get_group_info");
+            var context = new CQAPIContext(request);
+            context.SetCallBack(callback);
+            request.echo = context.Id;
+            request.@params = Json.ToJsonNode(new { group_id, no_cache });
+            bot.Send(context);
+        }
+
+        /// <summary>
+        /// 获取群列表
+        /// </summary>
+        /// <param name="no_cache">是否不使用缓存（使用缓存可能更新不及时, 但响应更快）</param>
+        public static void Group_GetGroupList(this CQBot bot, Action<CQGroupInfo[]> callback, bool no_cache = false)
+        {
+            CQRequest request = new CQRequest("get_group_list");
+            var context = new CQAPIContext(request);
+            context.SetCallBack(callback);
+            request.echo = context.Id;
+            request.@params = Json.ToJsonNode(new { no_cache });
+            bot.Send(context);
+        }
+
+        /// <summary>
+        /// 获取群列表
+        /// </summary>
+        /// <param name="group_id">群号</param>
+        /// <param name="user_id">QQ 号</param>
+        /// <param name="no_cache">是否不使用缓存（使用缓存可能更新不及时, 但响应更快）</param>
+        public static CQGroupInfo[] Group_GetGroupListSync(this CQBot bot, bool no_cache = false)
+        {
+            CQGroupInfo[] groupInfo = null;
+            bool ret = false;
+            bot.Group_GetGroupList(result =>
+            {
+                groupInfo = result;
+                ret = true;
+            }, no_cache);
+            while (!ret) Task.Yield().GetAwaiter().GetResult();
+            return groupInfo;
+        }
     }
 }

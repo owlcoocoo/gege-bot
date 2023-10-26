@@ -2,6 +2,7 @@
 {
     public interface IPlugin
     {
+        void Reload();
     }
 
 }

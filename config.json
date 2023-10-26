@@ -22,7 +22,14 @@
 		// 发送的图片数量
 		"MaxImages": 6,
 		// 图片质量 0-100，如大于等于 100 则发送原图
-		"ImageQuality": 80
+		"ImageQuality": 80,
+		// 启用 Pixivision 的推送
+		"EnablePixivisionPush": true,
+		// 获取特辑间隔时间，单位：分
+		"PixivisionFetchInterval": 60,
+		// 开放 Pixivision 的白名单群，不填则允许所有已加入的群
+		// 数据格式：[123456, 654321]
+		"PixivisionGroupWhiteList": []
 	},
 	"Approve": {
 		// 自动同意好友请求

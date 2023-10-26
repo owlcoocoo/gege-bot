@@ -9,7 +9,7 @@ namespace CQHttp.DTOs
         public int retcode { get; set; }
         public string msg { get; set; }
         public string wording { get; set; }
-        public JsonObject data { get; set; }
+        public JsonNode data { get; set; }
         public string echo { get; set; }
 
         public void FireCallBack(CQAPIContext context)

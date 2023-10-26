@@ -152,7 +152,7 @@ namespace GegeBot.Plugins.Pixiv
             return null;
         }
 
-        private KeyValuePair<int, byte[]>[] DownloadImages(List<string> urls)
+        public KeyValuePair<int, byte[]>[] DownloadImages(List<string> urls)
         {
             ConcurrentDictionary<int, byte[]> imageDict = new();
 
@@ -209,7 +209,7 @@ namespace GegeBot.Plugins.Pixiv
                     urls.Add(item["url_big"].GetValue<string>());
             }
 
-            dto.Alt += $"{illust_details["alt"]}\r\n作品id{illust_details["id"]}\r\n画师id{illust_details["user_id"]}";
+            dto.Alt += $"{illust_details["alt"]}\n作品id{illust_details["id"]} - 画师id{illust_details["user_id"]}";
 
             dto.ImageCount = urls.Count;
             urls = urls.Skip(index).Take(PixivConfig.MaxImages).ToList();
@@ -223,7 +223,7 @@ namespace GegeBot.Plugins.Pixiv
                     dto.Images.Add(item.Value);
                 }
 
-                dto.ImageMessage = $"{images.Length + index} / {dto.ImageCount} \r\n\r\n";
+                dto.ImageMessage = $"已发送 {images.Length + index} 张图片，共 {dto.ImageCount} 张图片。\n\n";
             }
 
             return dto;
