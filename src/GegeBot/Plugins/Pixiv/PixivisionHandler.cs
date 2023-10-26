@@ -12,6 +12,8 @@ namespace GegeBot.Plugins.Pixiv
 
         readonly Log log = new Log("pixivision");
 
+        Task pushTask = null;
+
         public PixivisionHandler(CQBot bot)
         {
             cqBot = bot;
@@ -24,13 +26,18 @@ namespace GegeBot.Plugins.Pixiv
         {
             if (!PixivConfig.EnablePixivisionPush) return;
 
-            Task.Factory.StartNew(FetchIllustration, TaskCreationOptions.LongRunning).ContinueWith((t) =>
+            if (pushTask == null)
             {
-                if (t.Exception != null)
+                pushTask = Task.Factory.StartNew(FetchIllustration, TaskCreationOptions.LongRunning);
+                pushTask.ContinueWith((t) =>
                 {
-                    log.WriteError(t.Exception.ToString());
-                }
-            });
+                    pushTask = null;
+                    if (t.Exception != null)
+                    {
+                        log.WriteError(t.Exception.ToString());
+                    }
+                });
+            }
         }
 
         private int GetIllustIndex(string id, long group_id, out string key)
