@@ -33,6 +33,9 @@ namespace GegeBot.Plugins.Pixiv.Tests
             result = api.GetIllustrationArticle("https://www.pixivision.net/zh/a/8830");
             Assert.IsTrue(result.Title == "向宇宙展开的未知世界 - 《崩坏：星穹铁道》同人作品插画特辑② -");
             Assert.IsTrue(result.Images.Any());
+
+            result = api.GetIllustrationArticle("https://www.pixivision.net/zh/a/9195");
+            Assert.IsNull(result);
         }
     }
 }

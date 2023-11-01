@@ -117,30 +117,37 @@ namespace GegeBot.Plugins.Pixiv
         {
             PixivisionArticle pixivisionArticle = new PixivisionArticle();
 
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(html);
-
-            var articleColumn = htmlDoc.DocumentNode.SelectSingleNode("//article");
-
-            pixivisionArticle.Title = SelectSingleNode(articleColumn, "/header/h1").InnerText;
-            pixivisionArticle.Thumbnail = SelectSingleNode(articleColumn, "/div[1]/div[1]/div[1]/div[1]/div/img").GetAttributeValue("src", "");
-            pixivisionArticle.Text = SelectSingleNode(articleColumn, "/div[1]/div[1]/div[2]/div").InnerHtml;
-            pixivisionArticle.Text = pixivisionArticle.Text.Replace("<p>", "").Replace("</p>", "\n");
-            pixivisionArticle.Text = pixivisionArticle.Text.Replace("<div>", "").Replace("</div>", "\n");
-            pixivisionArticle.Text = pixivisionArticle.Text.Replace("<br>", "");
-
-            var illustsContainer = SelectNodes(articleColumn, "/div[1]/div[1]/div[contains(@class,\"_feature-article-body__pixiv_illust\")]");
-            foreach (var item in illustsContainer)
+            try
             {
-                PixivisionArticleImage image =  new PixivisionArticleImage();
-                image.ImageTitle = SelectSingleNode(item, "/div/div[1]/div/h3/a").InnerText;
-                string titleUrl = SelectSingleNode(item, "/div/div[1]/div/h3/a").GetAttributeValue("href", "");
-                image.ImageId = GetSubsting(titleUrl, "artworks/", "?");
-                image.UserName = SelectSingleNode(item, "/div/div[1]/div/p/a").InnerText;
-                string userUrl = SelectSingleNode(item, "/div/div[1]/div/p/a").GetAttributeValue("href", "");
-                image.UserId = GetSubsting(userUrl, "users/", "?");
-                image.ImageUrl = SelectSingleNode(item, "/div/div[2]/a//img").GetAttributeValue("src", "");
-                pixivisionArticle.Images.Add(image);
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.LoadHtml(html);
+
+                var articleColumn = htmlDoc.DocumentNode.SelectSingleNode("//article");
+
+                pixivisionArticle.Title = SelectSingleNode(articleColumn, "/header/h1").InnerText;
+                pixivisionArticle.Thumbnail = SelectSingleNode(articleColumn, "/div[1]/div[1]/div[1]/div[1]/div/img").GetAttributeValue("src", "");
+                pixivisionArticle.Text = SelectSingleNode(articleColumn, "/div[1]/div[1]/div[2]/div").InnerHtml;
+                pixivisionArticle.Text = pixivisionArticle.Text.Replace("<p>", "").Replace("</p>", "\n");
+                pixivisionArticle.Text = pixivisionArticle.Text.Replace("<div>", "").Replace("</div>", "\n");
+                pixivisionArticle.Text = pixivisionArticle.Text.Replace("<br>", "");
+
+                var illustsContainer = SelectNodes(articleColumn, "/div[1]/div[1]/div[contains(@class,\"_feature-article-body__pixiv_illust\")]");
+                foreach (var item in illustsContainer)
+                {
+                    PixivisionArticleImage image = new PixivisionArticleImage();
+                    image.ImageTitle = SelectSingleNode(item, "/div/div[1]/div/h3/a").InnerText;
+                    string titleUrl = SelectSingleNode(item, "/div/div[1]/div/h3/a").GetAttributeValue("href", "");
+                    image.ImageId = GetSubsting(titleUrl, "artworks/", "?");
+                    image.UserName = SelectSingleNode(item, "/div/div[1]/div/p/a").InnerText;
+                    string userUrl = SelectSingleNode(item, "/div/div[1]/div/p/a").GetAttributeValue("href", "");
+                    image.UserId = GetSubsting(userUrl, "users/", "?");
+                    image.ImageUrl = SelectSingleNode(item, "/div/div[2]/a//img").GetAttributeValue("src", "");
+                    pixivisionArticle.Images.Add(image);
+                }
+            }
+            catch
+            {
+                pixivisionArticle = null;
             }
 
             return pixivisionArticle;

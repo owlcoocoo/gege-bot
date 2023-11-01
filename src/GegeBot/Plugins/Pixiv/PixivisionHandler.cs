@@ -35,6 +35,10 @@ namespace GegeBot.Plugins.Pixiv
                     if (t.Exception != null)
                     {
                         log.WriteError(t.Exception.ToString());
+
+                        Task.Delay(1000 * 60 * PixivConfig.PixivisionFetchInterval).Wait();
+
+                        Reload();
                     }
                 });
             }
@@ -70,6 +74,7 @@ namespace GegeBot.Plugins.Pixiv
                 foreach (var pixivision in pixivisionList)
                 {
                     var article = pixivisionAPI.GetIllustrationArticle(pixivision.Url);
+                    if (article == null) continue;
 
                     string key = $"{DateTime.Now:yyyyMMdd}_{pixivision.Id}";
                     PixivisionModel model = null;
@@ -110,7 +115,7 @@ namespace GegeBot.Plugins.Pixiv
                             cqCode.SetText($"{article.Title}\n\n");
                             cqCode.SetImage(imageBase64);
                             cqCode.SetText($"\n\n{article.Text}");
-                            cqCode.SetText($"想看插画特辑就发送“pvck{pixivision.Id}”吧~");
+                            cqCode.SetText($"\n想看插画特辑就发送“pvck{pixivision.Id}”吧~");
 
                             CQRequestMessage requestMessage = new CQRequestMessage();
                             requestMessage.group_id = groupInfo.group_id;
@@ -175,6 +180,11 @@ namespace GegeBot.Plugins.Pixiv
 
                             if (i < images.Length - 1)
                                 cqCode.SetText($"\n\n");
+                        }
+
+                        if (index + PixivConfig.MaxImages < model.Article.Images.Count) 
+                        {
+                            cqCode.SetText($"\n\n发送“pvck{keyword}”继续查看。");
                         }
 
                         Console.WriteLine($"[pixivision]发送消息");
