@@ -9,9 +9,8 @@ on:
 
 jobs:
   release:
-
     runs-on: ubuntu-latest
-
+    
     steps:
       - uses: actions/checkout@v3
         with:
@@ -30,11 +29,10 @@ jobs:
         run: dotnet publish src\\GegeBot -p:PublishProfile=src\\GegeBot\\Properties\\PublishProfiles\\linux-x64.pubxml
 
       - name: Pack
-        # if: ${{ github.event.inputs.create_release == 'true' }}
         run: |
-          7z a ./outputs/gege-bot_win-x64.zip ./bin/gege-bot/win-x64/*
-          7z a ./outputs/gege-bot_osx-x64.zip ./bin/gege-bot/osx-x64/*
-          7z a ./outputs/gege-bot_linux-x64.zip ./bin/gege-bot/linux-x64/*
+          7z a ./outputs/gege-bot_v${{ github.event.release.tag_name }}_win-x64.zip ./bin/gege-bot/win-x64/*
+          7z a ./outputs/gege-bot_v${{ github.event.release.tag_name }}_osx-x64.zip ./bin/gege-bot/osx-x64/*
+          7z a ./outputs/gege-bot_v${{ github.event.release.tag_name }}_linux-x64.zip ./bin/gege-bot/linux-x64/*
 
       - name: Release
         uses: fnkr/github-action-ghr@v1
