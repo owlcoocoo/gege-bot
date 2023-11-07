@@ -40,18 +40,21 @@ jobs:
       id: pack_artifacts
       # if: ${{ github.event.inputs.create_release == 'true' }}
       run: |
-        7z a gege-bot_win-x64.zip bin/gege-bot/win-x64/*
-        7z a gege-bot_osx-x64.zip bin/gege-bot/osx-x64/*
-        7z a gege-bot_linux-x64.zip bin/gege-bot/linux-x64/*
+        7z a gege-bot_win-x64.zip ./bin/gege-bot/win-x64/*
+        7z a gege-bot_osx-x64.zip ./bin/gege-bot/osx-x64/*
+        7z a gege-bot_linux-x64.zip ./bin/gege-bot/linux-x64/*
 
       # if: ${{ github.event.inputs.create_release == 'true' }}
     - uses: actions/upload-artifact@v3
       with:
+        name: gege-bot_win-x64.zip
         path: gege-bot_win-x64.zip
     - uses: actions/upload-artifact@v3
       with:
+        name: gege-bot_osx-x64.zip
         path: gege-bot_osx-x64.zip
     - uses: actions/upload-artifact@v3
       with:
+        name: gege-bot_linux-x64.zip
         path: gege-bot_linux-x64.zip
 
