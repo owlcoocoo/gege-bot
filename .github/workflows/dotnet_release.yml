@@ -35,8 +35,7 @@ jobs:
       - name: publish linux-x64
         run: dotnet publish src\\GegeBot -p:PublishProfile=src\\GegeBot\\Properties\\PublishProfiles\\linux-x64.pubxml
 
-      - name: Pack artifacts
-        id: pack_artifacts
+      - name: Pack
         # if: ${{ github.event.inputs.create_release == 'true' }}
         run: |
           7z a ./outputs/gege-bot_win-x64.zip ./bin/gege-bot/win-x64/*
@@ -61,6 +60,6 @@ jobs:
         uses: fnkr/github-action-ghr@v1
         if: startsWith(github.ref, 'refs/tags/')
         env:
-          GHR_COMPRESS: xz
           GHR_PATH: outputs/
+          GHR_REPLACE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
