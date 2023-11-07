@@ -21,6 +21,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        sparse-checkout: |
+          src
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
