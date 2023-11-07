@@ -47,14 +47,14 @@ jobs:
       # if: ${{ github.event.inputs.create_release == 'true' }}
     - uses: actions/upload-artifact@v3
       with:
-        name: gege-bot_win-x64.zip
+        name: gege-bot_win-x64
         path: gege-bot_win-x64.zip
     - uses: actions/upload-artifact@v3
       with:
-        name: gege-bot_osx-x64.zip
+        name: gege-bot_osx-x64
         path: gege-bot_osx-x64.zip
     - uses: actions/upload-artifact@v3
       with:
-        name: gege-bot_linux-x64.zip
+        name: gege-bot_linux-x64
         path: gege-bot_linux-x64.zip
 
