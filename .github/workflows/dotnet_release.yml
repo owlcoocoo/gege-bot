@@ -43,9 +43,23 @@ jobs:
           7z a ./outputs/gege-bot_linux-x64.zip ./bin/gege-bot/linux-x64/*
 
       - name: Upload release
-        uses: fnkr/github-action-ghr@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GHR_PATH: ./outputs
-          GHR_REPLACE: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: upload_release
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const path = require('path');
+            const fs = require('fs');
+            const release_id = '${{ github.event.release.id }}';
+            for (let file of await fs.readdirSync('./outputs')) {
+              if (path.extname(file) === '.zip') {
+                console.log('uploadReleaseAsset', file);
+                await github.repos.uploadReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release_id,
+                  name: file,
+                  data: await fs.readFileSync(`./outputs/${file}`)
+                });
+              }
+            }
