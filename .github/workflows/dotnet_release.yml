@@ -47,20 +47,20 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: gege-bot_win-x64
-          path: bin/gege-bot/win-x64/
+          path: outputs/gege-bot_win-x64.zip
       - uses: actions/upload-artifact@v3
         with:
           name: gege-bot_osx-x64
-          path: bin/gege-bot/osx-x64/
+          path: outputs/gege-bot_osx-x64.zip
       - uses: actions/upload-artifact@v3
         with:
           name: gege-bot_linux-x64
-          path: bin/gege-bot/linux-x64/
+          path: outputs/gege-bot_linux-x64.zip
 
-      # - name: Upload release
-      #   uses: fnkr/github-action-ghr@v1
-      #   if: startsWith(github.ref, 'refs/tags/')
-      #   env:
-      #     GHR_COMPRESS: xz
-      #     GHR_PATH: build/
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release
+        uses: fnkr/github-action-ghr@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GHR_COMPRESS: xz
+          GHR_PATH: outputs/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
