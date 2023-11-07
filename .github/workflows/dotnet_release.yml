@@ -30,11 +30,11 @@ jobs:
         dotnet-version: 7.0.x
 
     - name: publish win-x64
-      run: dotnet publish .\src\GegeBot -p:PublishProfile=.\src\GegeBot\Properties\PublishProfiles\win-x64.pubxml 
+      run: dotnet publish src\\GegeBot -p:PublishProfile=src\\GegeBot\\Properties\\PublishProfiles\\win-x64.pubxml 
     - name: publish osx-x64
-      run: dotnet publish .\src\GegeBot -p:PublishProfile=.\src\GegeBot\Properties\PublishProfiles\osx-x64.pubxml
+      run: dotnet publish src\\GegeBot -p:PublishProfile=src\\GegeBot\\Properties\\PublishProfiles\\osx-x64.pubxml
     - name: publish linux-x64
-      run: dotnet publish .\src\GegeBot -p:PublishProfile=.\src\GegeBot\Properties\PublishProfiles\linux-x64.pubxml
+      run: dotnet publish src\\GegeBot -p:PublishProfile=src\\GegeBot\\Properties\\PublishProfiles\\linux-x64.pubxml
 
     - name: Pack artifacts
       id: pack_artifacts
