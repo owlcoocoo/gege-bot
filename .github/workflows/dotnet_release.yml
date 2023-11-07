@@ -1,0 +1,52 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .Net Release
+
+on:
+  workflow_dispatch: # allows manual triggering
+    inputs:
+      create_release:
+        description: 'Create new release'
+        required: true
+        type: boolean
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  release:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+
+    - name: publish win-x64
+      run: dotnet publish src\GegeBot -p:PublishProfile=src\GegeBot\Properties\PublishProfiles\win-x64.pubxml 
+    - name: publish osx-x64
+      run: dotnet publish src\GegeBot -p:PublishProfile=src\GegeBot\Properties\PublishProfiles\osx-x64.pubxml
+    - name: publish linux-x64
+      run: dotnet publish src\GegeBot -p:PublishProfile=src\GegeBot\Properties\PublishProfiles\linux-x64.pubxml
+
+    - name: Pack artifacts
+      id: pack_artifacts
+      # if: ${{ github.event.inputs.create_release == 'true' }}
+      run: |
+        7z a gege-bot_win-x64.zip .\bin\gege-bot\win-x64\*
+        7z a gege-bot_osx-x64.zip .\bin\gege-bot\osx-x64\*
+        7z a gege-bot_linux-x64.zip .\bin\gege-bot\linux-x64\*
+
+    - name: Upload artifacts
+      # if: ${{ github.event.inputs.create_release == 'true' }}
+      uses: actions/upload-artifact@v3
+      with:
+        path: |
+          gege-bot_win-x64.zip
+          gege-bot_osx-x64.zip
+          gege-bot_linux-x64.zip
+
