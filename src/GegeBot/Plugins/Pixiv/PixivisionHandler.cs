@@ -89,7 +89,7 @@ namespace GegeBot.Plugins.Pixiv
                         PixivisionDb.Db.SetValue(key, Json.ToJsonString(model));
                     }
 
-                    CQGroupInfo[] groupInfos = cqBot.Group_GetGroupListSync();
+                    CQGroupInfo[] groupInfos = cqBot.Group_GetGroupListSync().Result;
                     if (PixivConfig.PixivisionGroupWhiteList.Any())
                     {
                         groupInfos = groupInfos.Where(g => PixivConfig.PixivisionGroupWhiteList.Exists(w => g.group_id == w)).ToArray();
@@ -115,7 +115,7 @@ namespace GegeBot.Plugins.Pixiv
                             cqCode.SetText($"{article.Title}\n\n");
                             cqCode.SetImage(imageBase64);
                             cqCode.SetText($"\n\n{article.Text}");
-                            cqCode.SetText($"\n想看插画特辑就发送“pvck{pixivision.Id}”吧~");
+                            cqCode.SetText($"想看插画特辑就发送“pvck{pixivision.Id}”吧~");
 
                             CQRequestMessage requestMessage = new CQRequestMessage();
                             requestMessage.group_id = groupInfo.group_id;

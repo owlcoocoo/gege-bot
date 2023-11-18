@@ -40,12 +40,12 @@
 
 配置文件是 `config.json`，请确保程序目录下有此文件。
 
-本项目使用的是 .NET 7.0 框架，依赖于 .NET 7 运行库。
+本项目使用的是 .NET 8.0 框架，依赖于 .NET 8 运行库。
 
-如需源码运行请下载 .NET 7 SDK。
+如需源码运行请下载 .NET 8 SDK。
 
 参考：
 
-[下载 .NET 7.0 (Linux、macOS 和 Windows)](https://dotnet.microsoft.com/zh-cn/download/dotnet/7.0)
+[下载 .NET 8.0 (Linux、macOS 和 Windows)](https://dotnet.microsoft.com/zh-cn/download/dotnet/8.0)
 
 [在 Windows、Linux 和 macOS 上安装 .NET | Microsoft Learn](https://learn.microsoft.com/zh-cn/dotnet/core/install/)

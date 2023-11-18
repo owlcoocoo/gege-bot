@@ -43,7 +43,7 @@ namespace CQHttp
         /// <param name="group_id">群号</param>
         /// <param name="user_id">QQ 号</param>
         /// <param name="no_cache">是否不使用缓存（使用缓存可能更新不及时, 但响应更快）</param>
-        public static CQGroupMemberInfo Group_GetGroupMemberInfoSync(this CQBot bot, long group_id, long user_id, bool no_cache = false)
+        public static async Task<CQGroupMemberInfo> Group_GetGroupMemberInfoSync(this CQBot bot, long group_id, long user_id, bool no_cache = false)
         {
             CQGroupMemberInfo memberInfo = null;
             bool ret = false;
@@ -52,7 +52,7 @@ namespace CQHttp
                 memberInfo = result;
                 ret = true;
             });
-            while (!ret) Task.Yield().GetAwaiter().GetResult();
+            while (!ret) await Task.Yield();
             return memberInfo;
         }
 
@@ -91,7 +91,7 @@ namespace CQHttp
         /// <param name="group_id">群号</param>
         /// <param name="user_id">QQ 号</param>
         /// <param name="no_cache">是否不使用缓存（使用缓存可能更新不及时, 但响应更快）</param>
-        public static CQGroupInfo[] Group_GetGroupListSync(this CQBot bot, bool no_cache = false)
+        public static async Task<CQGroupInfo[]> Group_GetGroupListSync(this CQBot bot, bool no_cache = false)
         {
             CQGroupInfo[] groupInfo = null;
             bool ret = false;
@@ -100,7 +100,7 @@ namespace CQHttp
                 groupInfo = result;
                 ret = true;
             }, no_cache);
-            while (!ret) Task.Yield().GetAwaiter().GetResult();
+            while (!ret) await Task.Yield();
             return groupInfo;
         }
     }
