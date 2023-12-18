@@ -50,7 +50,7 @@ namespace GegeBot.Plugins.Pixiv
             int index = 0;
             if (!string.IsNullOrEmpty(id))
             {
-                key = $"{DateTime.Now:yyyyMMdd}_{id}_{group_id}";
+                key = $"a{id}_{group_id}";
                 int.TryParse(PixivisionDb.Db.GetValue(key), out index);
             }
             return index;
@@ -76,7 +76,7 @@ namespace GegeBot.Plugins.Pixiv
                     var article = pixivisionAPI.GetIllustrationArticle(pixivision.Url);
                     if (article == null) continue;
 
-                    string key = $"{DateTime.Now:yyyyMMdd}_{pixivision.Id}";
+                    string key = $"a{pixivision.Id}";
                     PixivisionModel model = null;
                     string value = PixivisionDb.Db.GetValue(key);
                     if (string.IsNullOrEmpty(value))
@@ -137,7 +137,7 @@ namespace GegeBot.Plugins.Pixiv
             if (obj.message_type != CQMessageType.Group)
                 return;
 
-            if (!PixivConfig.PixivisionGroupWhiteList.Exists(g => g == obj.group_id))
+            if (PixivConfig.PixivisionGroupWhiteList.Any() && !PixivConfig.PixivisionGroupWhiteList.Exists(g => g == obj.group_id))
                 return;
 
             string text = CQCode.GetText(obj.message, out var atList).TrimStart();
@@ -153,7 +153,7 @@ namespace GegeBot.Plugins.Pixiv
                 {
                     keyword = keyword[2..];
 
-                    string key = $"{DateTime.Now:yyyyMMdd}_{keyword}";
+                    string key = $"a{keyword}";
                     string value = PixivisionDb.Db.GetValue(key);
                     if (!string.IsNullOrEmpty(value))
                     {
