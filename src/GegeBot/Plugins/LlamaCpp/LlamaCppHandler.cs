@@ -6,7 +6,7 @@ using System.Text;
 namespace GegeBot.Plugins.LlamaCpp
 {
     [Plugin]
-    internal class LlamaCppHandler
+    internal class LlamaCppHandler : IPlugin
     {
         readonly CQBot cqBot;
         readonly LlamaCppAPI llamaCppAPI = new LlamaCppAPI(LlamaCppConfig.ServerAddress);
@@ -16,6 +16,16 @@ namespace GegeBot.Plugins.LlamaCpp
 
         public LlamaCppHandler(CQBot bot)
         {
+            cqBot = bot;
+            cqBot.ReceivedMessage += CqBot_ReceivedMessage;
+
+            Reload();
+        }
+
+        public void Reload()
+        {
+            if (!LlamaCppConfig.Enable) return;
+
             foreach (string file in LlamaCppConfig.DictFile)
             {
                 Console.WriteLine($"[LlamaCpp]加载词库 {file}");
@@ -29,9 +39,6 @@ namespace GegeBot.Plugins.LlamaCpp
             }
 
             Console.WriteLine($"[LlamaCpp]词库加载完毕，共计 {dictionary.Count} 条。");
-
-            cqBot = bot;
-            cqBot.ReceivedMessage += CqBot_ReceivedMessage;
         }
 
         private string GetDbValue(CQEventMessageEx msg, out string key)
@@ -59,6 +66,8 @@ namespace GegeBot.Plugins.LlamaCpp
 
         private void CqBot_ReceivedMessage(CQEventMessageEx obj)
         {
+            if (!LlamaCppConfig.Enable) return;
+
             string text = CQCode.GetText(obj.message, out var atList).TrimStart();
 
             foreach (string keyword in LlamaCppConfig.FilterText)
@@ -129,7 +138,7 @@ namespace GegeBot.Plugins.LlamaCpp
             prompt += $"\n{botName}:";
 
             if (!string.IsNullOrEmpty(LlamaCppConfig.StopText) && !model.Stop.Contains(LlamaCppConfig.StopText))
-                model.Stop.Add(LlamaCppConfig.StopText);
+            model.Stop.Add(LlamaCppConfig.StopText);
             string name = $"{userName}:";
             if (!model.Stop.Contains(name))
                 model.Stop.Add(name);

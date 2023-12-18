@@ -3,6 +3,7 @@
     [Config("LlamaCpp")]
     internal class LlamaCppConfig
     {
+        public static bool Enable { get; set; }
         public static string ServerAddress { get; set; }
         public static bool WriteMessageLog { get; set; }
         public static bool UseGroupCard { get; set; }
