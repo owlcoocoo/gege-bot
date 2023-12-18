@@ -26,6 +26,8 @@ namespace GegeBot.Plugins.LlamaCpp
         {
             if (!LlamaCppConfig.Enable) return;
 
+            dictionary.Clear();
+
             foreach (string file in LlamaCppConfig.DictFile)
             {
                 Console.WriteLine($"[LlamaCpp]加载词库 {file}");
