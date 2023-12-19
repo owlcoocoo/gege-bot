@@ -38,6 +38,8 @@
 		"AutoApproveGroupInvite": false,
 	},
 	"LlamaCpp": {
+		// 是否启用
+		"Enable": false,
 		// 服务地址
 		"ServerAddress": "http://127.0.0.1:8088",
 		// 记录消息日志
@@ -65,4 +67,32 @@
 		// 自动回复概率 0.0 - 1.0
 		"ReplyProbability": 0.5,
 	},
+	"EdgeGpt": {
+		// 是否启用
+		"Enable": true,
+		// 服务地址
+		"ServerAddress": "http://127.0.0.1:8989",
+		// 代理地址
+		"Proxy": "http://127.0.0.1:1082",
+		// 生成图片的代理地址
+		"GenerateImageProxy": "http://127.0.0.1:1082",
+		// cookies 文件路径
+		"CookieFilePath": "bing_cookies.json",
+		// 生成图片所需的 cookie
+		"ImagesAuthCookie": "",
+		// 记录消息日志
+		"WriteMessageLog": true,
+		// 默认提示词文件路径，不填不做默认对话处理
+		"PromptFilePath": "prompt.txt",
+		// 记忆重置命令
+		"ResetCommand": "重置会话",
+		// 重置后发送的消息，不填不发送
+		"ResetMessage": "会话已重置。",
+		// 要过滤掉的文本，避免触发回复
+		"FilterText": ["--重载配置", "搜", "pv"],
+		// 字典文件集，用于自动回复
+		"DictFile": ["dict.json"],
+		// 自动回复概率 0.0 - 1.0
+		"ReplyProbability": 0.1,
+	}
 }

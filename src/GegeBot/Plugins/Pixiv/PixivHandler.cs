@@ -64,7 +64,7 @@ namespace GegeBot.Plugins.Pixiv
 
         private void CqBot_ReceivedMessage(CQEventMessageEx obj)
         {
-            string text = CQCode.GetText(obj.message, out var atList).TrimStart();
+            string text = CQCode.GetText(obj.message, out var atList, out _).TrimStart();
             if (atList.Count > 0 && !atList.Contains(obj.self_id.ToString())) return;
 
             if (text.StartsWith("搜"))

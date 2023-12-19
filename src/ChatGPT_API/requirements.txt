@@ -1,0 +1,3 @@
+re_edge_gpt
+fastapi
+uvicorn[standard]

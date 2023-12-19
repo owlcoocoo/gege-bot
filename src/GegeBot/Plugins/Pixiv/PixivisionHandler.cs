@@ -140,7 +140,7 @@ namespace GegeBot.Plugins.Pixiv
             if (PixivConfig.PixivisionGroupWhiteList.Any() && !PixivConfig.PixivisionGroupWhiteList.Exists(g => g == obj.group_id))
                 return;
 
-            string text = CQCode.GetText(obj.message, out var atList).TrimStart();
+            string text = CQCode.GetText(obj.message, out var atList, out _).TrimStart();
             if (atList.Count > 0 && !atList.Contains(obj.self_id.ToString())) return;
 
             if (text.StartsWith("pv"))

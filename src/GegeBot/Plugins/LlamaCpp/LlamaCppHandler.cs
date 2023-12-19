@@ -70,7 +70,7 @@ namespace GegeBot.Plugins.LlamaCpp
         {
             if (!LlamaCppConfig.Enable) return;
 
-            string text = CQCode.GetText(obj.message, out var atList).TrimStart();
+            string text = CQCode.GetText(obj.message, out var atList, out _).TrimStart();
 
             foreach (string keyword in LlamaCppConfig.FilterText)
             {

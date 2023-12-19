@@ -32,9 +32,10 @@ namespace CQHttp.DTOs
         /// <param name="cqCode">CQ 码</param>
         /// <param name="atQQ">被@的QQ列表</param>
         /// <returns></returns>
-        public static string GetText(string cqCode, out List<string> atQQ)
+        public static string GetText(string cqCode, out List<string> atQQ, out List<string> images)
         {
             atQQ = new List<string>();
+            images = new List<string>();
 
             var matches = Regex.Matches(cqCode, "\\[(.*?)\\]|[^\\[(.*?)\\]]+");
             if (matches.Count < 1) return cqCode;
@@ -60,6 +61,12 @@ namespace CQHttp.DTOs
                     else if (code == "text")
                     {
                         sb.Append(str_array[1].Split('=')[1]);
+                    }
+                    else if (code == "image")
+                    {
+                        string url = str_array.Where(a => a.IndexOf("url=") > -1).FirstOrDefault();
+                        if (!string.IsNullOrEmpty(url))
+                            images.Add(url.Split("url=")[1]);
                     }
                 }
                 else
