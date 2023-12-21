@@ -214,12 +214,11 @@ namespace GegeBot.Plugins.EdgeGPT
             catch (Exception ex)
             {
                 log.WriteError(ex.ToString());
-
-                Reset(edgeGptAPI);
             }
 
             if (string.IsNullOrWhiteSpace(content) && retryCounter < 1)
             {
+                Reset(edgeGptAPI);
                 retryCounter++;
                 goto RETRY;
             }
