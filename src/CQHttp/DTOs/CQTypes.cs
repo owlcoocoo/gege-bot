@@ -71,7 +71,7 @@
         public const string Notice = "notice";
     }
 
-    public struct CQMetaRventType
+    public struct CQMetaEventType
     {
         public const string Lifecycle = "lifecycle";
         public const string Heartbeat = "heartbeat";
@@ -99,5 +99,25 @@
         /// 元事件
         /// </summary>
         public const string MetaEvent = "meta_event";
+    }
+
+    public struct CQEventNoticeType
+    {
+        /// <summary>
+        /// 群禁言
+        /// </summary>
+        public const string GroupBan = "group_ban";
+    }
+
+    public struct CQEventGroupBanSubType
+    {
+        /// <summary>
+        /// 禁言
+        /// </summary>
+        public const string Ban = "ban";
+        /// <summary>
+        /// 解除禁言
+        /// </summary>
+        public const string LiftBan = "lift_ban";
     }
 }

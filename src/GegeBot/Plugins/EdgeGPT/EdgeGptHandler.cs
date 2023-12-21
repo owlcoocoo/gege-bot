@@ -24,7 +24,8 @@ namespace GegeBot.Plugins.EdgeGPT
         public EdgeGptHandler(CQBot bot)
         {
             cqBot = bot;
-            cqBot.ReceivedMessage += CqBot_ReceivedMessage; ;
+            cqBot.ReceivedMessage += CqBot_ReceivedMessage;
+            cqBot.ReceivedGroupBan += CqBot_ReceivedGroupBan;
 
             Reload();
         }
@@ -105,9 +106,8 @@ namespace GegeBot.Plugins.EdgeGPT
                 log.WriteInfo($"\nfirst:{prompt}\nbot:{content}");
         }
 
-        EdgeGptAPI GetEdgeGptAPI(CQEventMessageEx msg)
+        EdgeGptAPI GetEdgeGptAPI(string key)
         {
-            string key = BotSession.GetSessionKey(msg);
             if (edgeGptAPISessions.TryGetValue(key, out var api))
                 return api;
             api = new EdgeGptAPI(EdgeGptConfig.ServerAddress);
@@ -118,18 +118,30 @@ namespace GegeBot.Plugins.EdgeGPT
             return api;
         }
 
-        string Ask(CQEventMessageEx msg, EdgeGptAPI api, string prompt, out GenImages genImages, string imageUrl = null)
+        EdgeGptAPI GetEdgeGptAPI(CQEventMessageEx msg)
+        {
+            string key = BotSession.GetSessionKey(msg);
+            return GetEdgeGptAPI(key);
+        }
+
+        string Ask(string key, EdgeGptAPI api, string prompt, out GenImages genImages, string imageUrl = null)
         {
             var result = api.Ask(prompt, imageUrl: imageUrl);
             int code = result["code"].GetValue<int>();
             if (code == -1)
             {
-                string key = BotSession.GetSessionKey(msg);
                 string cookies = File.ReadAllText(EdgeGptConfig.CookieFilePath);
                 api.Create(key, cookies, EdgeGptConfig.Proxy);
                 InitFirstPrompt(api);
             }
             string content = GetAskResultContent(result, out genImages);
+            return content;
+        }
+
+        string Ask(CQEventMessageEx msg, EdgeGptAPI api, string prompt, out GenImages genImages, string imageUrl = null)
+        {
+            string key = BotSession.GetSessionKey(msg);
+            string content = Ask(key, api, prompt, out genImages, imageUrl);
             return content;
         }
 
@@ -160,6 +172,41 @@ namespace GegeBot.Plugins.EdgeGPT
                 }
             }
             catch { }
+        }
+
+        private void CqBot_ReceivedGroupBan(CQEventGroupBan obj)
+        {
+            if (obj.sub_type == CQEventGroupBanSubType.Ban)
+            {
+                if (obj.user_id.ToString() == cqBot.BotID)
+                {
+                    cqBot.IsGroupBanned = true;
+                    Console.WriteLine($"[EdgeGpt]Bot 在群 {obj.group_id} 被 {obj.operator_id} 禁言 {obj.duration} 秒。");
+                    if (!string.IsNullOrWhiteSpace(EdgeGptConfig.BannedPromptFilePath))
+                    {
+                        string text = File.ReadAllText(EdgeGptConfig.BannedPromptFilePath);
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            string key = $"{CQMessageType.Group}_{obj.group_id}";
+                            var api = GetEdgeGptAPI(key);
+                            string content = Ask(key, api, text, out _);
+                            if (EdgeGptConfig.WriteMessageLog)
+                                log.WriteInfo($"\n{EdgeGptConfig.BannedPromptFilePath}\nbot:{content}");
+                        }
+                    }
+                }
+                else if (obj.user_id == 0)
+                {
+                    cqBot.IsGroupBanned = true;
+                }
+            }
+            else if (obj.sub_type == CQEventGroupBanSubType.LiftBan)
+            {
+                if (obj.user_id == 0 || obj.user_id.ToString() == cqBot.BotID)
+                {
+                    cqBot.IsGroupBanned = false;
+                }
+            }
         }
 
         private void CqBot_ReceivedMessage(CQEventMessageEx obj)

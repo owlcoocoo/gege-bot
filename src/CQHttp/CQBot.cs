@@ -32,9 +32,22 @@ namespace CQHttp
         /// </summary>
         public event Action<CQEventRequest> ReceivedRequest = null;
         /// <summary>
+        /// 接收群禁言 / 解除禁言
+        /// </summary>
+        public event Action<CQEventGroupBan> ReceivedGroupBan = null;
+        /// <summary>
         /// 处理群禁言，返回 true 不处理消息
         /// </summary>
         public Func<CQEventMessageEx, bool> HandleGroupBan { get; set; } = null;
+
+        /// <summary>
+        /// 机器人QQ号码
+        /// </summary>
+        public string BotID { get; set; }
+        /// <summary>
+        /// 是否群禁言
+        /// </summary>
+        public bool IsGroupBanned { get; set; }
 
         private ClientWebSocket webSocket;
 
@@ -88,10 +101,10 @@ namespace CQHttp
         {
             switch (meta_event_type)
             {
-                case CQMetaRventType.Lifecycle:
+                case CQMetaEventType.Lifecycle:
                     //CQEventLifecycle lifecycle = Json.FromJsonString<CQEventLifecycle>(json);
                     break;
-                case CQMetaRventType.Heartbeat:
+                case CQMetaEventType.Heartbeat:
                     //CQEventHeartbeat heartbeat = Json.FromJsonString<CQEventHeartbeat>(json);
                     break;
                 default:
@@ -113,7 +126,7 @@ namespace CQHttp
                     isBanned = HandleGroupBan(obj);
                 }
 
-                if (!isBanned)
+                if (!IsGroupBanned && !isBanned)
                 {
                     ReceivedMessage.Invoke(obj);
 
@@ -163,6 +176,18 @@ namespace CQHttp
         {
             CQEventRequest request = Json.FromJsonString<CQEventRequest>(json);
             ReceivedRequest?.Invoke(request);
+            GC.Collect();
+        }
+
+        private void HandleNotice(string json)
+        {
+            CQEventNotice notice = Json.FromJsonString<CQEventNotice>(json);
+            if (notice.notice_type == CQEventNoticeType.GroupBan)
+            {
+                CQEventGroupBan groupBan = Json.FromJsonString<CQEventGroupBan>(json);
+                ReceivedGroupBan?.Invoke(groupBan);
+            }
+
             GC.Collect();
         }
 
@@ -228,6 +253,7 @@ namespace CQHttp
                                         NewTask(() => HandleRequest(json));
                                         break;
                                     case CQPostType.Notice:
+                                        NewTask(() => HandleNotice(json));
                                         break;
                                     case CQPostType.MetaEvent:
                                         HandleMetaEvent(cqEventBase.meta_event_type, json);

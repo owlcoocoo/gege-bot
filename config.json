@@ -84,6 +84,8 @@
 		"WriteMessageLog": true,
 		// 默认提示词文件路径，不填不做默认对话处理
 		"PromptFilePath": "prompt.txt",
+		// 被禁言提示词文件路径，不填不发送给 GPT
+		"BannedPromptFilePath": "banned_prompt.txt",
 		// 记忆重置命令
 		"ResetCommand": "重置会话",
 		// 重置后发送的消息，不填不发送

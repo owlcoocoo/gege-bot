@@ -52,6 +52,11 @@ namespace GegeBot
             }
             Console.WriteLine($"[插件]加载完毕");
 
+            cqBot.Account_GetLoginInfo(info =>
+            {
+                cqBot.BotID = info.user_id.ToString();
+            });
+
             cqBot.Run().Wait();
         }
 
