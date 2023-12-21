@@ -36,15 +36,37 @@ namespace CQHttp
         /// </summary>
         public Func<CQEventMessageEx, bool> HandleGroupBan { get; set; } = null;
 
-        private readonly ClientWebSocket webSocket = new ClientWebSocket();
+        private ClientWebSocket webSocket;
 
         private readonly ConcurrentDictionary<string, CQAPIContext> contexts = new ConcurrentDictionary<string, CQAPIContext>();
         public CQSession Session { get; private set; } = new CQSession();
 
+        private readonly string _uri;
 
         public CQBot(string uri)
         {
-            webSocket.ConnectAsync(new Uri(uri), CancellationToken.None).Wait();
+            _uri = uri;
+
+            Connect();
+        }
+
+        void Connect()
+        {
+            RETRY:
+
+            try
+            {
+                webSocket = new ClientWebSocket();
+                webSocket.ConnectAsync(new Uri(_uri), CancellationToken.None).Wait();
+                Console.WriteLine($"[CQBot]连接成功 {_uri}");
+            }
+            catch
+            {
+                Console.WriteLine($"[CQBot]连接失败 {_uri}，等待重连");
+                Task.Delay(10000).Wait();
+                Console.WriteLine($"[CQBot]重新连接 {_uri}");
+                goto RETRY;
+            }
         }
 
         public Task SendAsync(CQRequest req)
@@ -224,6 +246,13 @@ namespace CQHttp
                     catch (Exception e)
                     {
                         sb.Clear();
+
+                        if (webSocket.State == WebSocketState.Aborted)
+                        {
+                            Connect();
+                            continue;
+                        }
+                            
                         Exception?.Invoke(e, Session);
                     }
                 }
@@ -239,7 +268,6 @@ namespace CQHttp
             {
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
             }
-            webSocket.Dispose();
         }
     }
 }
