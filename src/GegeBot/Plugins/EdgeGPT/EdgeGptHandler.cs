@@ -180,8 +180,6 @@ namespace GegeBot.Plugins.EdgeGPT
             {
                 if (obj.user_id.ToString() == cqBot.BotID)
                 {
-                    cqBot.IsGroupBanned = true;
-                    Console.WriteLine($"[EdgeGpt]Bot 在群 {obj.group_id} 被 {obj.operator_id} 禁言 {obj.duration} 秒。");
                     if (!string.IsNullOrWhiteSpace(EdgeGptConfig.BannedPromptFilePath))
                     {
                         string text = File.ReadAllText(EdgeGptConfig.BannedPromptFilePath);
@@ -194,17 +192,6 @@ namespace GegeBot.Plugins.EdgeGPT
                                 log.WriteInfo($"\n{EdgeGptConfig.BannedPromptFilePath}\nbot:{content}");
                         }
                     }
-                }
-                else if (obj.user_id == 0)
-                {
-                    cqBot.IsGroupBanned = true;
-                }
-            }
-            else if (obj.sub_type == CQEventGroupBanSubType.LiftBan)
-            {
-                if (obj.user_id == 0 || obj.user_id.ToString() == cqBot.BotID)
-                {
-                    cqBot.IsGroupBanned = false;
                 }
             }
         }

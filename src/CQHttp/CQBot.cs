@@ -1,6 +1,7 @@
 ﻿using CQHttp.DTOs;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Runtime;
 using System.Text;
@@ -44,10 +45,12 @@ namespace CQHttp
         /// 机器人QQ号码
         /// </summary>
         public string BotID { get; set; }
+
+
         /// <summary>
-        /// 是否群禁言
+        /// 群禁言
         /// </summary>
-        public bool IsGroupBanned { get; set; }
+        private Dictionary<string, bool> GroupBanned { get; set; } = new Dictionary<string, bool>();
 
         private ClientWebSocket webSocket;
 
@@ -97,6 +100,25 @@ namespace CQHttp
             await SendAsync(req.Request);
         }
 
+        /// <summary>
+        /// 获取是否被群禁言
+        /// </summary>
+        /// <returns></returns>
+        public bool IsGroupBanned(string group_id)
+        {
+            GroupBanned.TryGetValue(group_id, out bool value);
+            return value;
+        }
+
+        /// <summary>
+        /// 设置是否被群禁言
+        /// </summary>
+        /// <returns></returns>
+        public void SetGroupBanned(string group_id, bool value)
+        {
+            GroupBanned[group_id] = value;
+        }
+
         private void HandleMetaEvent(string meta_event_type, string json)
         {
             switch (meta_event_type)
@@ -121,12 +143,15 @@ namespace CQHttp
                 Session.CurrentMessage = obj;
 
                 bool isBanned = false;
-                if (HandleGroupBan != null)
+                if (obj.message_type == CQMessageType.Group)
                 {
-                    isBanned = HandleGroupBan(obj);
+                    isBanned = IsGroupBanned(obj.group_id.ToString());
+
+                    if (!isBanned && HandleGroupBan != null)
+                        isBanned = HandleGroupBan(obj);
                 }
 
-                if (!IsGroupBanned && !isBanned)
+                if (!isBanned)
                 {
                     ReceivedMessage.Invoke(obj);
 

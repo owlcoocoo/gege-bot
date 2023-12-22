@@ -99,6 +99,9 @@ namespace GegeBot.Plugins.Pixiv
 
                     foreach (var groupInfo in groupInfos)
                     {
+                        if (cqBot.IsGroupBanned(groupInfo.group_id.ToString()))
+                            continue;
+
                         key = $"{DateTime.Now:yyyyMMdd}_{pixivision.Id}_{groupInfo.group_id}_push";
                         value = PixivisionDb.Db.GetValue(key);
                         if (string.IsNullOrEmpty(value))
