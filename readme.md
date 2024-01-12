@@ -30,7 +30,11 @@
 
 - [ ] 群聊复读
 
+- [x] 戳一戳发送随机图片
+
 - [x] 接入 [llama.cpp](https://github.com/ggerganov/llama.cpp)
+
+- [x] 接入 [EdgeGPT](https://github.com/Integration-Automation/ReEdgeGPT)
 
 - [x] 使用语言模型回复
 
