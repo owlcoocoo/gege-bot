@@ -31,6 +31,11 @@
 		// 数据格式：[123456, 654321]
 		"PixivisionGroupWhiteList": []
 	},
+	// 戳一戳
+	"Poke": {
+		// 存放文件的路径
+		"FilePath": "poke_files",
+	},
 	"Approve": {
 		// 自动同意好友请求
 		"AutoApproveFriendAdd": false,
