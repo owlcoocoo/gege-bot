@@ -11,7 +11,7 @@ namespace CQHttp
         /// <summary>
         /// 发送消息
         /// </summary>
-        public static void Message_SendMsg(this CQBot bot, CQRequestMessage msg, Action<CQResponseMessage> callback = null)
+        private static void Message_SendMsg(this CQBot bot, CQRequestMessage msg, Action<CQResponseMessage> callback = null)
         {
             CQRequest request = new CQRequest("send_msg");
             var context = new CQAPIContext(request);
@@ -21,6 +21,33 @@ namespace CQHttp
             bot.Send(context);
         }
 
+        /// <summary>
+        /// 发送私聊消息
+        /// </summary>
+        public static void Message_SendPrivateMsg(this CQBot bot, long user_id, CQCode cqCode, Action<CQResponseMessage> callback = null)
+        {
+            CQRequestMessage requestMessage = new CQRequestMessage
+            {
+                user_id = user_id,
+                message_type = CQMessageType.Private,
+                message = cqCode.ToJson()
+            };
+            Message_SendMsg(bot, requestMessage, callback);
+        }
+
+        /// <summary>
+        /// 发送群聊消息
+        /// </summary>
+        public static void Message_SendGroupMsg(this CQBot bot, long group_id, CQCode cqCode, Action<CQResponseMessage> callback = null)
+        {
+            CQRequestMessage requestMessage = new CQRequestMessage
+            {
+                group_id = group_id,
+                message_type = CQMessageType.Group,
+                message = cqCode.ToJson()
+            };
+            Message_SendMsg(bot, requestMessage, callback);
+        }
 
         /// <summary>
         /// 快速回复消息

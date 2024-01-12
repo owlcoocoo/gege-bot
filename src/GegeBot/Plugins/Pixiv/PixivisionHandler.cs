@@ -95,7 +95,7 @@ namespace GegeBot.Plugins.Pixiv
                         groupInfos = groupInfos.Where(g => PixivConfig.PixivisionGroupWhiteList.Exists(w => g.group_id == w)).ToArray();
                     }
 
-                    string imageBase64 = "";
+                    byte[] imageData = null;
 
                     foreach (var groupInfo in groupInfos)
                     {
@@ -108,23 +108,19 @@ namespace GegeBot.Plugins.Pixiv
                         {
                             Console.WriteLine($"[pixivision]推送{pixivision.Id} - {groupInfo.group_id}");
 
-                            if (string.IsNullOrEmpty(imageBase64))
+                            if (imageData == null)
                             {
                                 var image = pixivAPI.DownloadImages(new List<string>() { pixivision.Thumbnail })[0];
-                                imageBase64 = $"base64://{Convert.ToBase64String(image.Value)}";
+                                imageData = image.Value;
                             }
 
                             CQCode cqCode = new CQCode();
                             cqCode.SetText($"{article.Title}\n\n");
-                            cqCode.SetImage(imageBase64);
+                            cqCode.SetImage(imageData);
                             cqCode.SetText($"\n\n{article.Text}");
                             cqCode.SetText($"想看插画特辑就发送“pvck{pixivision.Id}”吧~");
 
-                            CQRequestMessage requestMessage = new CQRequestMessage();
-                            requestMessage.group_id = groupInfo.group_id;
-                            requestMessage.message_type = CQMessageType.Group;
-                            requestMessage.message = cqCode.ToJson();
-                            cqBot.Message_SendMsg(requestMessage);
+                            cqBot.Message_SendGroupMsg(groupInfo.group_id, cqCode);
 
                             PixivisionDb.Db.SetValue(key, "ok");
                         }
@@ -179,7 +175,7 @@ namespace GegeBot.Plugins.Pixiv
                             var image = images[i];
                             cqCode.SetText($"{image.ImageTitle} - {image.UserName}\n");
                             cqCode.SetText($"作品id{image.ImageId} - 画师id{image.UserId}\n");
-                            cqCode.SetImage($"base64://{Convert.ToBase64String(imageDataList[i].Value)}");
+                            cqCode.SetImage(imageDataList[i].Value);
 
                             if (i < images.Length - 1)
                                 cqCode.SetText($"\n\n");

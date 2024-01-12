@@ -127,7 +127,7 @@ namespace CQHttp.DTOs
         /// 图片
         /// </summary>
         /// <param name="file">图片文件名</param>
-        public CQCode SetImage(string file)
+        public CQCode SetImage(string file, int subType = 0)
         {
             CQCodeModel model = new CQCodeModel();
             model.type = "image";
@@ -135,6 +135,16 @@ namespace CQHttp.DTOs
             model.data.Add("subType", 0);
             data.Add(model);
             return this;
+        }
+
+        /// <summary>
+        /// 图片
+        /// </summary>
+        /// <param name="data">图片数据</param>
+        /// <param name="isFacebread">是否表情包</param>
+        public CQCode SetImage(byte[] data, bool isFacebread = false)
+        {
+            return SetImage($"base64://{Convert.ToBase64String(data)}", isFacebread ? 1 : 0);
         }
 
         /// <summary>

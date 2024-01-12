@@ -51,7 +51,7 @@ namespace GegeBot.Plugins.EdgeGPT
             Console.WriteLine($"[EdgeGpt]词库加载完毕，共计 {dictionary.Count} 条。");
         }
 
-        record GenImages(string Text, List<string> Images);
+        record GenImages(string Text, List<byte[]> Images);
 
         string GetAskResultContent(JsonNode jsonNode, out GenImages genImages, bool isSource = false)
         {
@@ -81,7 +81,7 @@ namespace GegeBot.Plugins.EdgeGPT
                         string messageType = msg["messageType"].GetValue<string>();
                         if (messageType == "GenerateContentQuery")
                         {
-                            genImages = new GenImages(msg["text"].GetValue<string>(), new List<string>());
+                            genImages = new GenImages(msg["text"].GetValue<string>(), new List<byte[]>());
                         }
                     }
                 }
@@ -166,8 +166,7 @@ namespace GegeBot.Plugins.EdgeGPT
                     var images_data = api.DownloadImages(urls);
                     foreach (var img in images_data)
                     {
-                        string base64Img = $"base64://{Convert.ToBase64String(img.Value)}";
-                        genImages.Images.Add(base64Img);
+                        genImages.Images.Add(img.Value);
                     }
                 }
             }
@@ -283,7 +282,7 @@ namespace GegeBot.Plugins.EdgeGPT
                 cqCode.SetReply(obj.message_id);
                 if (genImages.Images.Count > 0)
                 {
-                    foreach (string img in genImages.Images)
+                    foreach (byte[] img in genImages.Images)
                     {
                         cqCode.SetImage(img);
                     }

@@ -37,6 +37,11 @@ namespace CQHttp
         /// </summary>
         public event Action<CQEventGroupBan> ReceivedGroupBan = null;
         /// <summary>
+        /// 接收戳一戳
+        /// </summary>
+        public event Action<CQEventPoke> ReceivedPoke = null;
+
+        /// <summary>
         /// 处理群禁言，返回 true 不处理消息
         /// </summary>
         public Func<CQEventMessageEx, bool> HandleGroupBan { get; set; } = null;
@@ -207,10 +212,19 @@ namespace CQHttp
         private void HandleNotice(string json)
         {
             CQEventNotice notice = Json.FromJsonString<CQEventNotice>(json);
-            if (notice.notice_type == CQEventNoticeType.GroupBan)
+            switch (notice.notice_type)
             {
-                CQEventGroupBan groupBan = Json.FromJsonString<CQEventGroupBan>(json);
-                ReceivedGroupBan?.Invoke(groupBan);
+                case CQEventNoticeType.GroupBan:
+                    CQEventGroupBan groupBan = Json.FromJsonString<CQEventGroupBan>(json);
+                    ReceivedGroupBan?.Invoke(groupBan);
+                    break;
+                case CQEventNoticeType.Notify:
+                    if (notice.sub_type == CQEventNotifySubType.Poke)
+                    {
+                        CQEventPoke poke = Json.FromJsonString<CQEventPoke>(json);
+                        ReceivedPoke?.Invoke(poke);
+                    }
+                    break;
             }
 
             GC.Collect();

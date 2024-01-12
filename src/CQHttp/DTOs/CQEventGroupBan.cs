@@ -3,10 +3,6 @@
     public class CQEventGroupBan : CQEventNotice
     {
         /// <summary>
-        /// 事件子类型, 分别表示禁言、解除禁言
-        /// </summary>
-        public string sub_type { get; set; }
-        /// <summary>
         /// 群号
         /// </summary>
         public long group_id { get; set; }

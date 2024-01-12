@@ -107,6 +107,16 @@
         /// 群禁言
         /// </summary>
         public const string GroupBan = "group_ban";
+
+        public const string Notify = "notify";
+    }
+
+    public struct CQEventNotifySubType
+    {
+        /// <summary>
+        /// 戳一戳
+        /// </summary>
+        public const string Poke = "poke";
     }
 
     public struct CQEventGroupBanSubType
