@@ -89,7 +89,7 @@ namespace GegeBot.Plugins.Pixiv
                         PixivisionDb.Db.SetValue(key, Json.ToJsonString(model));
                     }
 
-                    CQGroupInfo[] groupInfos = cqBot.Group_GetGroupListSync().Result;
+                    CQGroupInfo[] groupInfos = cqBot.Group_GetGroupListAsync().Result;
                     if (PixivConfig.PixivisionGroupWhiteList.Any())
                     {
                         groupInfos = groupInfos.Where(g => PixivConfig.PixivisionGroupWhiteList.Exists(w => g.group_id == w)).ToArray();

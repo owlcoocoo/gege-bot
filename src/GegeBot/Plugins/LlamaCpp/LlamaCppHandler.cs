@@ -97,7 +97,7 @@ namespace GegeBot.Plugins.LlamaCpp
             string userName = obj.sender.nickname;
             if (LlamaCppConfig.UseGroupCard && obj.message_type == CQMessageType.Group)
             {
-                CQGroupMemberInfo memberInfo = cqBot.Group_GetGroupMemberInfoSync(obj.group_id, obj.self_id).Result;
+                CQGroupMemberInfo memberInfo = cqBot.Group_GetGroupMemberInfoAsync(obj.group_id, obj.self_id).Result;
                 if (memberInfo != null && !string.IsNullOrEmpty(memberInfo.card))
                     botName = memberInfo.card;
 
