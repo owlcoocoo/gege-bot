@@ -36,6 +36,10 @@
 		// 存放文件的路径
 		"FilePath": "poke_files",
 	},
+	"Setu": {
+		// setu撤回时间（秒），0不撤回
+		"DeleteSeconds": 30,
+	},
 	"Approve": {
 		// 自动同意好友请求
 		"AutoApproveFriendAdd": false,
